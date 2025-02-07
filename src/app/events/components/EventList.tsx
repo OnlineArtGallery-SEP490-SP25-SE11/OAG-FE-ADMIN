@@ -69,15 +69,14 @@ const EventList: React.FC<EventListProps> = ({ status }) => {
 		}
 	];
 
-	// Mock data - thay thế bằng data thật từ API
+
 	const data = [
 		{
 			key: '1',
-			title: 'Sự kiện mẫu',
+			title: 'Tranh Danh lam Thắng cảnh',
 			startTime: '2024-03-20 09:00:00',
 			endTime: '2024-03-25 18:00:00'
 		}
-		// Thêm data mẫu khác...
 	];
 
 	return (
