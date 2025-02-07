@@ -69,7 +69,6 @@ const EventList: React.FC<EventListProps> = ({ status }) => {
 		}
 	];
 
-
 	const data = [
 		{
 			key: '1',
