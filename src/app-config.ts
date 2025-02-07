@@ -1,7 +1,7 @@
 export const appConfig: {
-  mode: 'comingSoon' | 'maintenance' | 'live';
+	mode: 'comingSoon' | 'maintenance' | 'live';
 } = {
-  mode: 'live',
+	mode: 'live'
 };
 
 // export const protectedRoutes = [
