@@ -14,10 +14,11 @@ async function BlogsTableContent() {
 
 }
 
-export async function CharmsTable() {
+export async function BlogsTable() {
   return (
     <div className="container mx-auto py-10">
       <Suspense fallback={<TableSkeleton />}>
+
         <BlogsTableContent />
       </Suspense>
     </div>
