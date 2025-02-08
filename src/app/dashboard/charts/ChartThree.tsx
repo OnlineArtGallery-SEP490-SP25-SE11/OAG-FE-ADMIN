@@ -1,7 +1,10 @@
 import { ApexOptions } from "apexcharts";
 import React from "react";
-import ReactApexChart from "react-apexcharts";
 import DefaultSelectOption from "./components/DefaultSelectOption";
+import dynamic from "next/dynamic";
+
+// Dynamic import ReactApexChart để tránh SSR
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const ChartThree: React.FC = () => {
   const series = [65, 34, 12, 56];
@@ -17,7 +20,6 @@ const ChartThree: React.FC = () => {
       show: false,
       position: "bottom",
     },
-
     plotOptions: {
       pie: {
         donut: {
