@@ -2,18 +2,22 @@
 import { useToast } from "@/hooks/use-toast";
 import {  useState } from "react";
 import { useServerAction } from "zsa-react";
-import { deleteCharmAction } from "./action";
+import { deleteBlogAction } from "./action";
 import { DeleteModal } from "@/components/ui.custom/delete-modal";
 
 
 
-export function DeleteCharmButton({ charmId }: { charmId: number }) {
+
+export function DeleteBlogButton({ blogId }: { blogId: string }) {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
 
-    const { execute, error, isPending } = useServerAction(deleteCharmAction, {
+
+
+    const { execute, error, isPending } = useServerAction(deleteBlogAction, {
       onSuccess: () => {
         toast({
+
           title: "Charm deleted",
           variant: "success",
           description: "Charm deleted successfully",
@@ -33,10 +37,11 @@ export function DeleteCharmButton({ charmId }: { charmId: number }) {
       <DeleteModal
         isOpen={isOpen}
         setIsOpen={setIsOpen}
-        title="Delete Charm"
-        description="Are you sure you want to delete this charm? This action cannot be undone."
-        onConfirm={() => execute({ charmId })}
+        title="Delete Blog"
+        description="Are you sure you want to delete this blog? This action cannot be undone."
+        onConfirm={() => execute({ blogId })}
         isPending={isPending}
       />
+
     );
   }
