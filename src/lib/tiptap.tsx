@@ -10,21 +10,28 @@ import Link from "@tiptap/extension-link";
 import sanitizeHtml from "sanitize-html";
 import { useCurrentEditor } from "@tiptap/react";
 import {
-  Bold,
+  BoldIcon,
   CodeXml,
   Heading2,
   Heading3,
   Heading4,
   Heading5,
   Heading6,
-  Italic,
+  ItalicIcon,
   LinkIcon,
   List,
   ListOrdered,
   YoutubeIcon,
+
 } from "lucide-react";
 import { useCallback } from "react";
 import { ImageUploader } from "@/lib/image-upload";
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
+import Heading from '@tiptap/extension-heading'
+import BulletList from '@tiptap/extension-bullet-list'
+import OrderedList from '@tiptap/extension-ordered-list'
+import CodeBlock from '@tiptap/extension-code-block'
 
 
 export const sanitizeOptions = {
@@ -96,6 +103,12 @@ export const extensions = [
   //     languageClassPrefix: 'language-',
   //     lowlight,
   // })
+  Bold,
+  Italic,
+  Heading,
+  BulletList,
+  OrderedList,
+  CodeBlock,
 ];
 
 export const MenuBar = () => {
@@ -155,17 +168,18 @@ export const MenuBar = () => {
         disabled={!editor.can().chain().focus().toggleBold().run()}
         className={editor.isActive("bold") ? "is-active" : ""}
       >
-        <Bold />
+        <BoldIcon />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
         className={editor.isActive("italic") ? "is-active" : ""}
       >
-        <Italic />
+        <ItalicIcon />
       </button>
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+
         className={editor.isActive("heading", { level: 2 }) ? "is-active" : ""}
       >
         <Heading2 />

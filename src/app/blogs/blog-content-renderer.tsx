@@ -1,7 +1,7 @@
 // components/BlogContentRenderer.tsx
 'use client'
 
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, type Extensions } from '@tiptap/react'
 
 import { extensions } from '@/lib/tiptap'
 
@@ -12,7 +12,7 @@ interface BlogContentRendererProps {
 
 export function BlogContentRenderer({ content }: BlogContentRendererProps) {
   const editor = useEditor({
-    extensions: extensions ,
+    extensions: extensions as Extensions,
     content,
     editable: false,
     immediatelyRender: false,
