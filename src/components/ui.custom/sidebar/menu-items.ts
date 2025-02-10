@@ -3,6 +3,7 @@ import {
 	Bell,
 	FileText,
 	Home,
+	Newspaper,
 	Settings,
 	ShoppingBag,
 	UserCog,
@@ -31,7 +32,9 @@ const menuItems = [
 	{ href: '/events', label: 'Events', icon: FileText },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
 	{ href: '/products', label: 'Products', icon: ShoppingBag },
-	{ href: '/settings', label: 'Settings', icon: Settings }
+	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
+	{ href: '/settings', label: 'Settings', icon: Settings },
+	
 ];
 
 export default menuItems;
