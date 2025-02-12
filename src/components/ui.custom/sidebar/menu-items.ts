@@ -5,7 +5,6 @@ import {
 	Home,
 	Newspaper,
 	Settings,
-	ShoppingBag,
 	UserCog,
 	Users
 } from 'lucide-react';
@@ -31,7 +30,6 @@ const menuItems = [
 	},
 	{ href: '/events', label: 'Events', icon: FileText },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
-	{ href: '/products', label: 'Products', icon: ShoppingBag },
 	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
 	{ href: '/settings', label: 'Settings', icon: Settings },
 	
