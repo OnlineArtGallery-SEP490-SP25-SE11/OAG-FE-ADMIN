@@ -23,7 +23,7 @@ import { Blog } from "@/types/blog";
 
 export function BlogActions({ blog }: { blog: Blog }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditCharmOpen, setIsEditCharmOpen] = useState(false);
+  const [isEditBlogOpen, setIsEditBlogOpen] = useState(false);
 
 
   const { execute, isPending } = useServerAction(deleteBlogAction, {
@@ -37,11 +37,11 @@ export function BlogActions({ blog }: { blog: Blog }) {
   return (
     <>
       <InteractiveOverlay
-        isOpen={isEditCharmOpen}
-        setIsOpen={setIsEditCharmOpen}
+        isOpen={isEditBlogOpen}
+        setIsOpen={setIsEditBlogOpen}
         title={""}
         description={""}
-        form={<ApproveBlogForm blog={blog} setIsOpen={setIsEditCharmOpen} />}
+        form={<ApproveBlogForm blog={blog} setIsOpen={setIsEditBlogOpen} />}
       />
 
 
@@ -68,7 +68,7 @@ export function BlogActions({ blog }: { blog: Blog }) {
         <DropdownMenuContent>
           <DropdownMenuItem
             onClick={() => {
-              setIsEditCharmOpen(true);
+              setIsEditBlogOpen(true);
             }}
             className={btnStyles}
 
