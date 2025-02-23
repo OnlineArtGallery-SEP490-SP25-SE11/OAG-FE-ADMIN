@@ -39,7 +39,8 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
     resolver: zodResolver(approveBlogSchema),
     defaultValues: {
       title: blog.title,
-      tags: blog.tags.join(", "),
+      // tags: blog.tags.join(", "),
+      tags: 'story, news, ideas',
     },
   });
 
@@ -103,10 +104,8 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
 
   return (
     <div className="w-full max-w-2xl mx-auto px-1 py-6">
-      <h2 className="text-xl text-center font-semibold mb-6">Review Blog</h2>
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-muted-foreground">Blog Preview</h3>
+        <div className="flex items-center justify-end mb-2">
           <Link 
             href={`/blogs/preview/${blog._id}`}
             target="_blank"

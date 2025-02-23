@@ -1,4 +1,4 @@
-import { TableSkeleton } from "./blog-table";
+import { TableSkeleton } from "./blogs-table";
 
 export default function Loading() {
   return (

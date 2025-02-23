@@ -77,7 +77,7 @@ export const columns: ColumnDef<Blog>[] = [
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "updatedAt",
     header: ({ column }) => {
       return (
         <Button
@@ -85,14 +85,14 @@ export const columns: ColumnDef<Blog>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="w-full font-semibold text-center"
         >
-          Created At
+          Updated At
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return <div className="font-medium text-center">{date.toLocaleDateString()}</div>;
+      const updatedAt = row.getValue("updatedAt") as string;
+      return <div className="font-medium text-center">{new Date(updatedAt).toLocaleDateString()}</div>;
     },
   },
   {
@@ -101,7 +101,7 @@ export const columns: ColumnDef<Blog>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-full flex justify-between">
+            <Button variant="ghost" className="h-8 w-full flex justify-center">
               Status
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
