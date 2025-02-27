@@ -1,23 +1,22 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import env from '@/lib/validateEnv';
 import { getSession } from 'next-auth/react';
-export default axios.create({
-	baseURL: process.env.NEXT_PUBLIC_API_URL,
-	headers: {
-		'Content-type': 'application/json'
-		// "Authorization": `Bearer ${token}`
-	}
-});
 
-export function axiosWithAuth(token: string) {
+
+export const createApi = (token?: string): AxiosInstance => {
+	const headers: Record<string, string> = {
+		'Content-Type': 'application/json'
+	};
+
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`;
+	}
+
 	return axios.create({
-		baseURL: env.NEXT_PUBLIC_API_URL,
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`
-		}
+		baseURL: process.env.NEXT_PUBLIC_API_URL,
+		headers
 	});
-}
+};
 
 interface AxiosInstanceOptions {
 	useToken?: boolean;

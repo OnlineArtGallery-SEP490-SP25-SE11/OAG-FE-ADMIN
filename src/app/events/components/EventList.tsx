@@ -102,6 +102,7 @@ const EventList: React.FC<EventListProps> = ({ status }) => {
         {
             title: 'Trạng thái',
             key: 'status',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             render: (_: any, record: Event) => (
                 <Tag
                     color={
@@ -123,6 +124,7 @@ const EventList: React.FC<EventListProps> = ({ status }) => {
         {
             title: 'Thao tác',
             key: 'action',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             render: (_: any, record: Event) => (
                 <Space size='middle'>
                     <Button

@@ -12,6 +12,7 @@ interface Props {
 const CreateEvent: React.FC<Props> = ({ visible, onClose, onSuccess }) => {
 	const [form] = Form.useForm();
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const handleSubmit = async (values: any) => {
 		try {
 			const payload: CreateEventPayload = {
@@ -25,6 +26,7 @@ const CreateEvent: React.FC<Props> = ({ visible, onClose, onSuccess }) => {
 			form.resetFields();
 			onClose();
 			onSuccess?.();
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		} catch (error) {
 			message.error('Có lỗi xảy ra khi tạo sự kiện');
 		}

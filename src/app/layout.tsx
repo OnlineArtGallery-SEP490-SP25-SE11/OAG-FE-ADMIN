@@ -1,9 +1,8 @@
 import Sidebar from '@/components/ui.custom/sidebar';
-import { Provider } from '@radix-ui/react-toast';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-
+import { Providers } from './providers';
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
 	variable: '--font-geist-sans',
@@ -30,12 +29,14 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<div className='flex min-h-screen'>
-					<Sidebar />
-					<main className='flex-1 mt-8 p-8 md:ml-64 overflow-y-auto'>
-						<Provider>{children}</Provider>
-					</main>
-				</div>
+				<Providers>
+					<div className='flex min-h-screen'>
+						<Sidebar />
+						<main className='flex-1 mt-8 p-8 md:ml-64 overflow-y-auto'>
+							{children}
+						</main>
+					</div>
+				</Providers>
 			</body>
 		</html>
 	);
