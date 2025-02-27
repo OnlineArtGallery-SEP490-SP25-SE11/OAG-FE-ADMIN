@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { InteractiveOverlay } from "@/components/ui.custom/interactive-overlay";
 import { ApproveBlogForm } from "./approve-blog-form";
 import { Blog } from "@/types/blog";
+import { BlogStatus } from "@/utils/enums";
 
 
 export function BlogActions({ blog }: { blog: Blog }) {
@@ -66,16 +67,19 @@ export function BlogActions({ blog }: { blog: Blog }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem
-            onClick={() => {
-              setIsEditBlogOpen(true);
-            }}
-            className={btnStyles}
-
-          >
-            <Eye className={btnIconStyles} />
-            Review
-          </DropdownMenuItem>
+         {
+          blog.status === BlogStatus.PENDING_REVIEW && (
+            <DropdownMenuItem
+              className={cn(btnStyles, "text-blue-500")}
+              onClick={() => {
+                setIsEditBlogOpen(true);
+              }}
+            >
+              <Eye className={btnIconStyles} />
+              Review
+            </DropdownMenuItem>
+          )
+         }
           <DropdownMenuItem
             className={cn(btnStyles, "text-red-500")}
             onClick={() => {

@@ -5,10 +5,11 @@ import { Separator } from '@/components/ui/separator';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import menuItems from './menu-items';
 import SidebarItem from './sidebar-item';
 import MobileSidebar from './sidebar-mobile';
+import { UserInfo, UserInfoSkeleton } from './user-info';
 
 export default function Sidebar() {
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -88,8 +89,10 @@ export default function Sidebar() {
 					</ScrollArea>
 				</div>
 				<Separator className='w-full m-1' />
-				<div className='self-center justify-end'>
-					<div className='bg-red-500 rounded-full w-10 h-10' />
+				<div className='mt-auto'>
+					<Suspense fallback={<UserInfoSkeleton />}>
+						<UserInfo />
+					</Suspense>
 				</div>
 			</div>
 		</nav>

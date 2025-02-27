@@ -1,4 +1,6 @@
 import { createApi } from "@/lib/axios";
+import { ApiResponse } from "@/types/response";
+import axiosInstance from 'axios';
 
 export const deleteBlog = async (blogId: string) => {
   // todo: delete blog from database
@@ -29,10 +31,7 @@ export const getBlog = async (blogId: string) => {
 };
 export const getBlogs = async () => {
   try {
-     //await 3 seconds 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
       const res = await createApi().get("/blog");
-      console.log("Fetching blogs:", res.data);
       return res.data;
   } catch (error) {
     console.error("Error fetching blogs:", error);
@@ -41,6 +40,104 @@ export const getBlogs = async () => {
 };
 
 
+export async function updateBlog({
+	accessToken,
+	updateData
+}: {
+	accessToken: string;
+	updateData: {
+		_id: string;
+		title?: string;
+		content?: string;
+		image?: string;
+		published?: boolean;
+		status?: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+    tags?: string[];
+	};
+}) {
+	const payload: {
+		title?: string;
+		content?: string;
+		image?: string;
+		published?: boolean;
+		tags?: string[];
+	} = {};
+
+	if (updateData.title) payload.title = updateData.title;
+	if (updateData.content) payload.content = updateData.content;
+	if (updateData.image) payload.image = updateData.image;
+	if (updateData.published !== undefined)
+		payload.published = updateData.published;
+	if (updateData.tags) payload.tags = updateData.tags;
+	try {
+		const res: ApiResponse = await createApi(accessToken).put(
+			`/blog/${updateData._id}`,
+			payload,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			}
+		);
+		return res.data;
+	} catch (err) {
+		if (axiosInstance.isAxiosError(err)) {
+			console.error(err);
+			console.error(
+				`Error when update blog: ${err.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${err}`);
+		}
+	}
+}
 
 
 
+export async function approveBlog({
+	accessToken,
+	blogId,
+}: {
+	accessToken: string;
+	blogId: string;
+}) {
+	try {
+		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/approve`);
+		return res.data;
+	} catch (err) {
+		if (axiosInstance.isAxiosError(err)) {
+			console.error(err);
+			console.error(
+				`Error when approve blog: ${err.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${err}`);
+		}
+	}
+}
+
+
+export async function rejectBlog({
+	accessToken,
+	blogId,
+	reason
+}: {
+	accessToken: string;
+	blogId: string;
+	reason: string;
+}) {
+	try {
+		
+		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/reject`, { reason });
+		return res.data;
+	} catch (error) {
+		if (axiosInstance.isAxiosError(error)) {
+			console.error(error);
+			console.error(
+				`Error when rejecting blog: ${error.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${error}`);
+		}
+	}
+}

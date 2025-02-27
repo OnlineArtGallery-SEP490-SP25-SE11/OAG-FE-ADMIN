@@ -1,5 +1,5 @@
 'use strict';
-import axios from '@/lib/axios';
+import { createApi } from '@/lib/axios';
 import { setCookies } from '@/lib/session';
 import axiosInstance from 'axios';
 
@@ -37,7 +37,7 @@ export async function authenticate(user: any, account: Account) {
 		password: user.password as string
 	};
 	try {
-		const res = await axios.post('/auth', data);
+		const res = await createApi().post('/auth', data);
 		if (res.data.isAuthenticated) {
 			setCookies({
 				accessToken: res.data.result.accessToken,
@@ -61,7 +61,7 @@ export async function generateToken(userId: string, role: string[]) {
 	const data: { userId: string; role: string[] } = { userId, role };
 	console.log(data, 'data');
 	try {
-		const res = await axios.post('/auth/token', data);
+		const res = await createApi().post('/auth/token', data);
 		return res.data;
 	} catch (err) {
 		if (axiosInstance.isAxiosError(err)) {
@@ -76,7 +76,7 @@ export async function generateToken(userId: string, role: string[]) {
 
 export async function refreshAccessToken(refreshToken: string) {
 	try {
-		const res = await axios.post('/auth/refresh', {
+		const res = await createApi().post('/auth/refresh', {
 			oldToken: refreshToken
 		});
 		return res.data;
@@ -93,7 +93,7 @@ export async function refreshAccessToken(refreshToken: string) {
 
 export async function decode(token: string) {
 	try {
-		const res = await axios.get(`/auth/decode/${token}`);
+		const res = await createApi().get(`/auth/decode/${token}`);
 		return res.data;
 	} catch (err) {
 		if (axiosInstance.isAxiosError(err)) {
