@@ -1,3 +1,4 @@
+import { BlogStatus } from "@/utils/enums";
 import { z } from "zod";
 
 export const blogSchema = z.object({
@@ -5,7 +6,6 @@ export const blogSchema = z.object({
   title: z.string(),
   content: z.string(),
   image: z.string(),
-  published: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
   heartCount: z.number(),
@@ -16,7 +16,7 @@ export const blogSchema = z.object({
   }),
   views: z.number(),
   tags: z.array(z.string()),
-  status: z.enum(["pending", "published"]).optional().default("pending"),
+  status: z.nativeEnum(BlogStatus),
 });
 export type Blog = z.infer<typeof blogSchema>;
 export type PageInfo = {

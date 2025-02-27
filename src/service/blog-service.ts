@@ -1,3 +1,7 @@
+import { createApi } from "@/lib/axios";
+import { ApiResponse } from "@/types/response";
+import axiosInstance from 'axios';
+
 export const deleteBlog = async (blogId: string) => {
   // todo: delete blog from database
   // todo: delete blog from cloudinary
@@ -26,65 +30,114 @@ export const getBlog = async (blogId: string) => {
   };
 };
 export const getBlogs = async () => {
-  return [
-    {
-      _id: "1",
-      title: "The Evolution of Digital Art: From Pixels to Virtual Reality",
-      content: "<p>Digital art has transformed the creative landscape...</p>",
-      image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f",
-      createdAt: new Date("2024-03-15"),
-      updatedAt: new Date("2024-03-15"),
-      author: {
-        _id: "1",
-        name: "Sarah Chen",
-        image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
-      },
-      views: 2500,
-      tags: ["digital art", "technology", "virtual reality"],
-      heartCount: 180,
-      published: true,
-      status: "published" as const,
-    },
-    {
-      _id: "2", 
-      title: "Traditional Oil Painting Techniques for Beginners",
-      content: "<p>Master the fundamentals of oil painting...</p>",
-      image: "https://res.cloudinary.com/djvlldzih/image/upload/v1739242086/gallery/arts/say38sarukeftfib0by9.jpg",
-      createdAt: new Date("2024-03-10"),
-      updatedAt: new Date("2024-03-12"),
-      author: {
-        _id: "2",
-        name: "Michael Roberts",
-        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e",
-      },
-      views: 1800,
-      tags: ["oil painting", "traditional art", "tutorials"],
-      heartCount: 145,
-      published: true,
-      status: "published" as const,
-    },
-    {
-      _id: "3",
-      title: "Contemporary Art Market Trends 2024",
-      content: "<p>Analyzing the latest trends in contemporary art sales...</p>",
-      image: "https://images.unsplash.com/photo-1501084817091-a4f3d1d19e07", 
-      createdAt: new Date("2024-03-05"),
-      updatedAt: new Date("2024-03-05"),
-      author: {
-        _id: "3",
-        name: "Emily Watson",
-        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
-      },
-      views: 3200,
-      tags: ["art market", "contemporary art", "investment"],
-      heartCount: 210,
-      published: true,
-      status: "published" as const,
-    }
-  ];
+  try {
+      const res = await createApi().get("/blog");
+      return res.data;
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    return [];
+  }
 };
 
 
+export async function updateBlog({
+	accessToken,
+	updateData
+}: {
+	accessToken: string;
+	updateData: {
+		_id: string;
+		title?: string;
+		content?: string;
+		image?: string;
+		published?: boolean;
+		status?: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+    tags?: string[];
+	};
+}) {
+	const payload: {
+		title?: string;
+		content?: string;
+		image?: string;
+		published?: boolean;
+		tags?: string[];
+	} = {};
+
+	if (updateData.title) payload.title = updateData.title;
+	if (updateData.content) payload.content = updateData.content;
+	if (updateData.image) payload.image = updateData.image;
+	if (updateData.published !== undefined)
+		payload.published = updateData.published;
+	if (updateData.tags) payload.tags = updateData.tags;
+	try {
+		const res: ApiResponse = await createApi(accessToken).put(
+			`/blog/${updateData._id}`,
+			payload,
+			{
+				headers: {
+					Authorization: `Bearer ${accessToken}`
+				}
+			}
+		);
+		return res.data;
+	} catch (err) {
+		if (axiosInstance.isAxiosError(err)) {
+			console.error(err);
+			console.error(
+				`Error when update blog: ${err.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${err}`);
+		}
+	}
+}
 
 
 
+export async function approveBlog({
+	accessToken,
+	blogId,
+}: {
+	accessToken: string;
+	blogId: string;
+}) {
+	try {
+		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/approve`);
+		return res.data;
+	} catch (err) {
+		if (axiosInstance.isAxiosError(err)) {
+			console.error(err);
+			console.error(
+				`Error when approve blog: ${err.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${err}`);
+		}
+	}
+}
+
+
+export async function rejectBlog({
+	accessToken,
+	blogId,
+	reason
+}: {
+	accessToken: string;
+	blogId: string;
+	reason: string;
+}) {
+	try {
+		
+		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/reject`, { reason });
+		return res.data;
+	} catch (error) {
+		if (axiosInstance.isAxiosError(error)) {
+			console.error(error);
+			console.error(
+				`Error when rejecting blog: ${error.response?.data.errorCode}`
+			);
+		} else {
+			console.error(`Unexpected error: ${error}`);
+		}
+	}
+}

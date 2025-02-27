@@ -39,7 +39,8 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
     resolver: zodResolver(approveBlogSchema),
     defaultValues: {
       title: blog.title,
-      tags: blog.tags.join(", "),
+      // tags: blog.tags.join(", "),
+      tags: 'story, news, ideas',
     },
   });
 
@@ -86,11 +87,10 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
     }
   });
 
-  const onApprove: SubmitHandler<z.infer<typeof approveBlogSchema>> = (values) => {
+  const onApprove: SubmitHandler<z.infer<typeof approveBlogSchema>> = () => {
     executeApprove({
       blogId: blog._id,
-      title: values.title,
-      tags: values.tags ? values.tags.split(",").map(tag => tag.trim()) : [],
+      // tags: values.tags ? values.tags.split(",").map(tag => tag.trim()) : [],
     });
   };
 
@@ -103,11 +103,9 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
 
   return (
     <div className="w-full max-w-2xl mx-auto px-1 py-6">
-      <h2 className="text-xl text-center font-semibold mb-6">Review Blog</h2>
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-muted-foreground">Blog Preview</h3>
-          <Link 
+        <div className="flex items-center justify-end mb-2">
+          <Link
             href={`/blogs/preview/${blog._id}`}
             target="_blank"
             className="flex items-center gap-1 text-sm text-blue-500 hover:text-blue-600 transition-colors"
@@ -161,14 +159,20 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags (comma-separated)</FormLabel>
+                    <FormLabel>Tags</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="tag1, tag2, tag3" className="w-full" />
+                      <Input
+                        {...field}
+                        value={blog.tags.join(", ") || ""}
+                        disabled
+                        className="w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <Separator className="my-6" />
               {approveError && (
                 <Alert variant="destructive">
@@ -201,8 +205,8 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
                   <FormItem>
                     <FormLabel>Rejection Reason</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        {...field} 
+                      <Textarea
+                        {...field}
                         placeholder="Please provide a reason for rejection..."
                         className="min-h-[120px] resize-none w-full"
                       />

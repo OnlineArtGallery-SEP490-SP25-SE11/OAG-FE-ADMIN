@@ -1,8 +1,8 @@
 "use client";
 
-import {  ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BlogActions } from "./blog-actions";
 import Image from "next/image";
@@ -14,15 +14,29 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import EditTags from "./edit-tags";
+import { BlogStatus } from "@/utils/enums";
 
 export const statusOptions = [
   {
-    value: "pending",
+    value: BlogStatus.PUBLISHED,
+    label: "Published",
+  },
+  {
+    value: BlogStatus.PENDING_REVIEW,
     label: "Pending",
   },
   {
-    value: "published",
-    label: "Published",
+    value: BlogStatus.DRAFT,
+    label: "Draft",
+  },
+  {
+    value: BlogStatus.REVIEW,
+    label: "Review",
+  },
+  {
+    value: BlogStatus.REJECTED,
+    label: "Rejected",
   },
 ];
 
@@ -73,11 +87,11 @@ export const columns: ColumnDef<Blog>[] = [
     },
     cell: ({ row }) => {
       const views = row.getValue("views") as number;
-      return <div className="font-medium text-center">{views.toLocaleString()}</div>;
+      return <div className="font-medium text-center">{views}</div>;
     },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "updatedAt",
     header: ({ column }) => {
       return (
         <Button
@@ -85,14 +99,14 @@ export const columns: ColumnDef<Blog>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="w-full font-semibold text-center"
         >
-          Created At
+          Updated At
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
     cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      return <div className="font-medium text-center">{date.toLocaleDateString()}</div>;
+      const updatedAt = row.getValue("updatedAt") as string;
+      return <div className="font-medium text-center">{new Date(updatedAt).toLocaleDateString()}</div>;
     },
   },
   {
@@ -101,9 +115,9 @@ export const columns: ColumnDef<Blog>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-full flex justify-between">
+            <Button variant="ghost" className="h-8 w-full flex justify-center">
               Status
-              <ArrowUpDown className="ml-2 h-4 w-4" />
+              <Filter className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -137,7 +151,7 @@ export const columns: ColumnDef<Blog>[] = [
       };
 
       return (
-        <Badge 
+        <Badge
           className={`${statusStyles[status || 'pending']} font-medium mx-auto`}
         >
           {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending'}
@@ -156,7 +170,8 @@ export const columns: ColumnDef<Blog>[] = [
     cell: ({ row }) => {
       const blog = row.original;
       return (
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-2">
+          <EditTags blogId={blog._id} currentTags={blog.tags} />
           <BlogActions blog={blog} />
         </div>
       );

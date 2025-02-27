@@ -11,7 +11,7 @@ export function CreateBlogButton() {
         <>
             <Link href="http://localhost:3000/my-blogs">
                 <Button
-                    className={cn(btnStyles, "flex items-center mr-8")}
+                    className={cn(btnStyles, "flex items-center")}
                 >
                     <PlusIcon className="w-4 h-4" />
                     New Blog
