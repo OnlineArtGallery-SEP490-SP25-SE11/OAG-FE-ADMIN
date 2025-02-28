@@ -1,18 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  getPaginationRowModel,
-  SortingState,
-  getSortedRowModel,
-  ColumnFiltersState,
-  getFilteredRowModel,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -38,42 +32,92 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState, useEffect } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  pagination: {
+    pageIndex: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  pagination,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [globalFilter, setGlobalFilter] = useState("");
-
+  
+  // Add debounce for search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      // Only update if the search term has actually changed
+      if (globalFilter !== searchParams.get('search')) {
+        const params = new URLSearchParams(searchParams);
+        params.set('page', '1'); // Reset to first page on new search
+        if (globalFilter) {
+          params.set('search', globalFilter);
+        } else {
+          params.delete('search');
+        }
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    }, 500); // 500ms debounce
+    
+    return () => clearTimeout(handler);
+  }, [globalFilter, router, pathname, searchParams]);
+  
+  // Initialize search field from URL
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search') || '';
+    if (searchFromUrl !== globalFilter) {
+      setGlobalFilter(searchFromUrl);
+    }
+  }, [searchParams]);
+  
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: "includesString",
-    onGlobalFilterChange: setGlobalFilter,
+    manualPagination: true,
+    pageCount: pagination.totalPages,
     state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-    },
-    initialState: {
       pagination: {
-        pageSize: 4,
+        pageIndex: pagination.pageIndex,
+        pageSize: pagination.pageSize,
       },
     },
   });
+
+  const updateSearchParams = (updates: Record<string, string | number | null>) => {
+    const params = new URLSearchParams(searchParams.toString());
+    
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null) {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    });
+    
+    return params.toString();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    router.push(
+      `${pathname}?${updateSearchParams({ page: newPage })}`,
+      { scroll: false }
+    );
+  };
 
   const exportToCSV = () => {
     // Implementation for CSV export
@@ -87,8 +131,8 @@ export function DataTable<TData, TValue>({
           <Search className="text-secondary-400 dark:text-secondary-500 h-4 w-4" />
           <Input
             placeholder="Search all columns..."
-            value={globalFilter ?? ""}
-            onChange={(event) => setGlobalFilter(String(event.target.value))}
+            value={globalFilter}
+            onChange={(event) => setGlobalFilter(event.target.value)}
             className="max-w-sm h-8 text-sm"
           />
         </div>
@@ -120,7 +164,6 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
                   className="hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -143,26 +186,27 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between space-x-2 py-2">
         <div className="flex items-center space-x-2">
           <p className="text-xs text-gray-700 dark:text-gray-300">
-            Showing{" "}
-            <span className="font-medium">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}</span>
-            {" "}to{" "}
-            <span className="font-medium">
-              {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)}
-            </span>
-            {" "}of{" "}
-            <span className="font-medium">{table.getFilteredRowModel().rows.length}</span> results
+            Showing {pagination.pageIndex * pagination.pageSize + 1} to {
+              Math.min((pagination.pageIndex + 1) * pagination.pageSize, pagination.totalCount)
+            } of {pagination.totalCount} results
           </p>
           <Select
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value));
+              router.push(
+                `${pathname}?${updateSearchParams({ 
+                  page: 1, // Reset to page 1
+                  limit: Number(value)
+                })}`,
+                { scroll: false }
+              );
             }}
           >
             <SelectTrigger className="h-7 w-[60px] text-xs">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue placeholder={pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
-              {[4, 8, 12, 16, 20].map((pageSize) => (
+              {[10, 20, 30, 50, 100].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`} className="text-xs">
                   {pageSize}
                 </SelectItem>
@@ -174,8 +218,8 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => handlePageChange(1)}
+            disabled={!pagination.hasPrevPage}
             className="h-7 w-7"
           >
             <ChevronsLeft className="h-3 w-3" />
@@ -183,8 +227,8 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => handlePageChange(pagination.pageIndex)}
+            disabled={!pagination.hasPrevPage}
             className="h-7 w-7"
           >
             <ChevronLeft className="h-3 w-3" />
@@ -192,8 +236,8 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => handlePageChange(pagination.pageIndex + 2)}
+            disabled={!pagination.hasNextPage}
             className="h-7 w-7"
           >
             <ChevronRight className="h-3 w-3" />
@@ -201,8 +245,8 @@ export function DataTable<TData, TValue>({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
+            onClick={() => handlePageChange(pagination.totalPages)}
+            disabled={!pagination.hasNextPage}
             className="h-7 w-7"
           >
             <ChevronsRight className="h-3 w-3" />
