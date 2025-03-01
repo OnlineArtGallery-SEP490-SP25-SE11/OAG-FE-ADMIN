@@ -66,36 +66,70 @@ export function SortableHeader({
     );
 }
 
-// StatusFilterHeader - handles filtering by status
-export function StatusFilterHeader({
-    column
+export function FilterHeader<T extends string>({
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    column,
+    title,
+    paramName,
+    options,
+    icon = <Filter className="ml-2 h-4 w-4" />
 }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     column: Column<any, unknown>;
+    title: string;
+    paramName: string;
+    options: Array<{ value: T, label: string }>;
+    icon?: React.ReactNode;
 }) {
+    const { replace } = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const handleFilter = (value: string, checked: boolean) => {
+        const params = new URLSearchParams(searchParams.toString());
+        const currentValues = params.get(paramName) || '';
+        const valuesArray = currentValues ? currentValues.split(',') : [];
+        
+        if (checked) {
+            // Add the value if it doesn't exist
+            if (!valuesArray.includes(value)) {
+                valuesArray.push(value);
+            }
+        } else {
+            // Remove the value if it exists
+            const index = valuesArray.indexOf(value);
+            if (index !== -1) {
+                valuesArray.splice(index, 1);
+            }
+        }
+        
+        // Join values with comma and set param (or remove if empty)
+        if (valuesArray.length > 0) {
+            params.set(paramName, valuesArray.join(','));
+        } else {
+            params.delete(paramName);
+        }
+
+        params.set('page', '1');
+
+        replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-full flex justify-center">
-                    Status
-                    <Filter className="ml-2 h-4 w-4" />
+                    {title}
+                    {icon}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                {statusOptions.map((option) => (
+                {options.map((option) => (
                     <DropdownMenuCheckboxItem
                         key={option.value}
-                        checked={(column.getFilterValue() as string[] ?? []).includes(option.value)}
+                        checked={searchParams.get(paramName)?.split(',').includes(option.value) || false}
                         onCheckedChange={(checked) => {
-                            const filterValues = column.getFilterValue() as string[] ?? [];
-                            if (checked) {
-                                column.setFilterValue([...filterValues, option.value]);
-                            } else {
-                                column.setFilterValue(
-                                    filterValues.filter((value) => value !== option.value)
-                                );
-                            }
+                            handleFilter(option.value, checked);
                         }}
                     >
                         {option.label}

@@ -63,8 +63,8 @@ export function DataTable<TData, TValue>({
       // Only update if the search term has actually changed
       if (globalFilter !== searchParams.get('search')) {
         const params = new URLSearchParams(searchParams);
-        params.set('page', '1'); // Reset to first page on new search
         if (globalFilter) {
+          params.set('page', '1'); // Reset to first page on new search
           params.set('search', globalFilter);
         } else {
           params.delete('search');

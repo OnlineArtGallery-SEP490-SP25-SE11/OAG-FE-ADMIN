@@ -74,7 +74,7 @@ export async function BlogsTable({
       <Suspense key={`${page}-${limit}-${sortField}-${sortOrder}-${status}-${search}`} fallback={<TableSkeleton />}>
         <BlogsTableContent 
           page={page} 
-          limit={limit} 
+          limit={1} 
           sort={sort}
           status={status}
           search={search}

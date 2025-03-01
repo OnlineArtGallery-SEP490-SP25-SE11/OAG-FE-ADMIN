@@ -6,9 +6,8 @@ import { BlogActions } from "./blog-actions";
 import Image from "next/image";
 import { Blog } from "@/types/blog";
 import EditTags from "./edit-tags";
-import { SortableHeader, StatusFilterHeader, statusOptions } from "./column-headers";
-
-export { statusOptions };
+import { FilterHeader, SortableHeader, statusOptions } from "./column-headers";
+import { BlogStatus } from "@/utils/enums";
 
 export const columns: ColumnDef<Blog>[] = [
   {
@@ -67,17 +66,17 @@ export const columns: ColumnDef<Blog>[] = [
   },
   {
     accessorKey: "status",
-    header: ({ column }) => <StatusFilterHeader column={column} />,
+    header: ({ column }) => <FilterHeader column={column} title="Status" paramName="status" options={statusOptions} />,
     cell: ({ row }) => {
-      const status = row.original?.status || "DRAFT";
+      const status = row.original?.status || BlogStatus.DRAFT;
       
       // Map status to colors
       const statusStyles = {
-        PUBLISHED: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
-        PENDING_REVIEW: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
-        DRAFT: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100",
-        REVIEW: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
-        REJECTED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
+        [BlogStatus.PUBLISHED]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
+        [BlogStatus.PENDING_REVIEW]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100",
+        [BlogStatus.DRAFT]: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-100",
+        [BlogStatus.REVIEW]: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100",
+        [BlogStatus.REJECTED]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100",
       };
 
       return (
@@ -91,7 +90,7 @@ export const columns: ColumnDef<Blog>[] = [
     filterFn: (row, id, value: string[]) => {
       if (!value.length) return true; // If no filters selected, show all
       const status = row.getValue(id) as string;
-      return value.includes(status || 'DRAFT');
+      return value.includes(status || BlogStatus.DRAFT);
     },
   },
   {
