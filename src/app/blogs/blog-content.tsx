@@ -1,9 +1,10 @@
 
 import { Breadcrumb } from "@/components/ui.custom/breadcrumb";
-import { BlogsTable } from "./blogs-table";
+import { BlogsTable } from "./blog-table";
 import { CreateBlogButton } from "./create-blog-button";
 
-export default function BlogsContent() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function BlogsContent({ searchParams } : { searchParams: any }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -15,7 +16,7 @@ export default function BlogsContent() {
         />
         <CreateBlogButton />
       </div>
-      <BlogsTable />
+      <BlogsTable searchParams={searchParams} />
     </div>
   );
 }
