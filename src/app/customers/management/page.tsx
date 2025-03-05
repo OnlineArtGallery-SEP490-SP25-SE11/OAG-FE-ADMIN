@@ -42,7 +42,7 @@ export default function ManagementPage() {
           ]} 
         />
       </div>
-      <DataTable columns={columns} data={customers} />
+      {/* <DataTable columns={columns} data={customers} /> */}
     </div>
   );
 }

@@ -48,9 +48,9 @@ interface AxiosInstanceOptions {
  *
  */
 export async function createAxiosInstance({
-	useToken = false,
-	onError
-}: AxiosInstanceOptions): Promise<AxiosInstance | null> {
+											  useToken = false,
+											  onError
+										  }: AxiosInstanceOptions): Promise<AxiosInstance | null> {
 	const session = useToken ? await getSession() : null;
 	const accessToken = session?.user.accessToken;
 	if (useToken && !accessToken) {
