@@ -72,6 +72,7 @@ export default function EditEventButton({ event }: EditEventButtonProps) {
       startDate: event?.startDate ? new Date(event.startDate).toISOString().split('T')[0] : '',
       endDate: event?.endDate ? new Date(event.endDate).toISOString().split('T')[0] : '',
     },
+    mode: 'onChange',
   });
 
   const { mutate, isPending } = useMutation({

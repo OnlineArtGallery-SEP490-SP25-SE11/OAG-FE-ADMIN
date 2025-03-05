@@ -112,3 +112,9 @@ export const deleteEventAction = authenticatedAction
        return { message: 'Event deleted successfully' };
     })
 
+
+
+
+export default eventService = {
+    
+}

@@ -168,7 +168,7 @@ export default function CreateEventButton() {
                         <p className="mt-1 text-sm text-red-600">{form.formState.errors.type.message}</p>
                       )}
                     </div>
-
+                      
                     <div>
                       <Label htmlFor="status" className="text-lg font-medium text-gray-700">
                         Status
