@@ -1,7 +1,24 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import env from '@/lib/validateEnv';
 import { getSession } from 'next-auth/react';
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_URL;
+export default axios.create({
+	baseURL: process.env.NEXT_PUBLIC_API_URL,
+	headers: {
+		'Content-type': 'application/json'
+		// "Authorization": `Bearer ${token}`
+	}
+});
 
+export function axiosWithAuth(token: string) {
+	return axios.create({
+		baseURL: env.NEXT_PUBLIC_API_URL,
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${token}`
+		}
+	});
+}
 
 export const createApi = (token?: string): AxiosInstance => {
 	const headers: Record<string, string> = {
@@ -13,7 +30,7 @@ export const createApi = (token?: string): AxiosInstance => {
 	}
 
 	return axios.create({
-		baseURL: process.env.NEXT_PUBLIC_API_URL,
+		baseURL: BASE_API_URL,
 		headers
 	});
 };
@@ -46,7 +63,9 @@ export async function createAxiosInstance({
 		baseURL: env.NEXT_PUBLIC_API_URL,
 		headers: {
 			'Content-Type': 'application/json',
-			...(accessToken && { Authorization: `Bearer ${accessToken}` })
+			...(accessToken && {
+				Authorization: `Bearer ${accessToken}`
+			})
 		}
 	});
 
