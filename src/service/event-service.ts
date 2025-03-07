@@ -1,117 +1,105 @@
 import { createApi } from "@/lib/axios";
 import { ApiResponse } from "@/types/response";
 import axiosInstance from "axios";
+import { createAxiosInstance } from '@/lib/axios';
+import { EventStatus } from "@/utils/enums";
+
+export interface Event {
+  title: string;
+  description: string;
+  image: string;
+  type: string;
+  status: EventStatus.UPCOMING;
+  organizer: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface EventUpdate {
+  title: string;
+  description: string;
+  image: string;
+  type: string;
+  status: EventStatus;
+  organizer: string;
+  startDate: string;
+  endDate: string;
+}
 
 const eventService = {
-  
-  async getEvents(accessToken: string) {
-    try {
-      const res = await createApi().get("/event", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+  async get(){
+    try{
+      const axios = await createAxiosInstance({useToken:true})
+      if (!axios) {
+        throw new Error("Failed to create axios instance");
+      }
+      const res = await axios.get("/event")
       return res.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError(error)) {
-        console.error(error);
-        console.error(`Error when getting events: ${error.response?.data.errorCode}`);
-      } else {
-        console.error(`Unexpected error: ${error}`);
-      }
     }
-  },
-
-  async getEventById(eventId: string) {
-    try {
-      const res = await createApi().get(`/event/${eventId}`);
-      return res.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError(error)) {
-        console.error(error);
-        console.error(`Error when getting event by ID: ${error.response?.data.errorCode}`);
-      } else {
-        console.error(`Unexpected error: ${error}`);
-      }
-    }
-  },
-
-  async createEvent({
-    accessToken,
-    eventData,
-  }: {
-    accessToken: string;
-    eventData: {
-      title: string;
-      description: string;
-      image: string;
-      type: string;
-      status: string;
-      organizer: string;
-      startDate: string;
-      endDate: string;
-    };
-  }) {
-    try {
-      const res: ApiResponse = await createApi(accessToken).post("/event", eventData);
-      if (res.status === 201) {
-        return res.data;
-      } else {
-        console.error(`Invalid event data: ${res.message}`);
-      }
-    } catch (error) {
-      console.error("Error creating event:", error);
+    catch(error){
+      console.error("Error getting events:", error);
       return null;
     }
   },
-
-  async deleteEvent(eventId: string) {
+  async add(data: Event) {
     try {
-      await createApi().delete(`/event/${eventId}`);
-    } catch (error) {
-      console.error("Error deleting event:", error);
-    }
-  },
-
-  async updateEvent({
-    accessToken,
-    updateData,
-  }: {
-    accessToken: string;
-    updateData: {
-      _id: string;
-      title?: string;
-      description?: string;
-      image?: string;
-      type?: string;
-      status?: string;
-      organizer?: string;
-      participants?: string[];
-      startDate?: string;
-      endDate?: string;
-    };
-  }) {
-    try {
-      const res: ApiResponse = await createApi(accessToken).put(
-        `/event/${updateData._id}`,
-        updateData,
-        {   
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      console.log(res.data, "update event response");
-      return res.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError(error)) {
-        console.error(error);
-        console.error(`Error when updating event: ${error.response?.data.errorCode}`);
-      } else {
-        console.error(`Unexpected error: ${error}`);
+      const axios = await createAxiosInstance({ useToken: true })
+      if (!axios) {
+        throw new Error("Failed to create axios instance");
       }
+      const res = await axios.post("/event", data);
+      return res.data;
+    }
+    catch (error) {
+      console.error("Error adding event:", error);
+      return null;
     }
   },
+  async update(data: EventUpdate, id: string) {
+    try {
+      const axios = await createAxiosInstance({ useToken: true })
+      if (!axios) {
+
+        throw new Error("Failed to create axios instance");
+      }
+      const res = await axios.put(`/event/${id}`, data);
+      return res.data;
+    }
+    catch (error) {
+      console.error("Error adding event:", error);
+      return null;
+    }
+  },
+  async getById(id: string) {
+    try {
+      const axios = await createAxiosInstance({ useToken: true })
+      if (!axios) {
+        throw new Error("Failed to create axios instance");
+      }
+      const res = await axios.get(`/event/${id}`)
+      return res.data;
+    }
+    catch (error) {
+      console.error("Error getting event by ID:", error);
+      return null;
+    }
+  },
+  
+  async delete(id: string) {
+    try{
+      const axios = await createAxiosInstance({useToken:true})
+      if (!axios) {
+        throw new Error("Failed to create axios instance");
+      }
+      const res = await axios.delete(`/event/${id}`)
+      return res.data;
+    }
+    catch(error){
+      console.error("Error deleting event:", error);
+      return null;
+    }
+  }
+  
 };
 
 export default eventService;

@@ -28,7 +28,20 @@ const menuItems = [
 			}
 		]
 	},
-	{ href: '/events', label: 'Events', icon: FileText },
+	{ href: '/events', label: 'Events', icon: FileText,
+		children: [
+			{
+				href: '/events/manage',
+				label: 'Manage',
+				icon: FileText
+			},
+			{
+				href: '/events/create',
+				label: 'Create',
+				icon: FileText
+			}
+		]
+	 },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
 	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
 	{ href: '/settings', label: 'Settings', icon: Settings },
