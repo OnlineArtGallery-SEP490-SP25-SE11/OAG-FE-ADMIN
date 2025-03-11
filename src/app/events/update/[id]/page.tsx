@@ -54,7 +54,7 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
     queryFn: () => eventService.getById(params.id),
   });
   const event = data?.data;
-
+console.log(event);
   // Khởi tạo form với react-hook-form
   const form = useForm<EventForm>({
     resolver: zodResolver(eventSchema),
@@ -63,7 +63,7 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
       description: '',
       image: '',
       type: '',
-      status: EventStatus.UPCOMING,
+      status: event?.status,
       organizer: '',
       startDate: '',
       endDate: '',
@@ -76,8 +76,7 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
       console.log('Resetting form with event:', event);
       // Đảm bảo status luôn là một trong các giá trị enum hợp lệ
       const validStatus = Object.values(EventStatus).includes(event.status) 
-        ? event.status 
-        : EventStatus.UPCOMING;
+      ? event.status : EventStatus;
         
       form.reset({
         title: event.title || '',
@@ -102,7 +101,8 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
       toast({
         title: 'Success',
         description: 'Event updated successfully!',
-        variant: 'success',
+        className: 'bg-green-500 text-white border-green-600',
+        duration: 2000,
       });
       router.push('/events/manage');
       router.refresh();
@@ -111,7 +111,8 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
       toast({
         title: 'Error',
         description: error.message || 'Failed to update event',
-        variant: 'destructive',
+        className: 'bg-red-500 text-white border-red-600',
+        duration: 2000,
       });
       console.error('Error updating event:', error);
     },

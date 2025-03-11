@@ -465,12 +465,12 @@ export default function EventTable() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => eventService.delete(id),
     onSuccess: () => {
-      toast({ title: "Success", description: "Event deleted successfully.", variant: "success" })
+      toast({ title: "Success", description: "Event deleted successfully.", className: "bg-green-500 text-white border-green-600", duration: 2000 })
       refetch()
     },
     onError: (error) => {
       console.error("Error deleting event:", error)
-      toast({ title: "Error", description: "Error deleting event.", variant: "destructive" })
+      toast({ title: "Error", description: "Error deleting event.", className: "bg-red-500 text-white border-red-600", duration: 2000 })
     },
   })
 
