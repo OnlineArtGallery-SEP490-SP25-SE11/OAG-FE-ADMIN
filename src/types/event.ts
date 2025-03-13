@@ -1,28 +1,16 @@
-export interface Event {
-  _id: string;
-  title: string;
-  description: string;
-  type: string;
-  status: 'ongoing' | 'upcoming' | 'ended';
-  organizer: string;
-  userId: string;
-  startDate: Date;
-  endDate: Date;
-  participants: string[];
-  image: string;
-}
+import { z } from "zod";
 
-export interface CreateEventPayload {
-  title: string;
-  description: string;
-  type: string;
-  status: 'ongoing' | 'upcoming' | 'ended';
-  organizer: string;
-  startDate: Date;
-  endDate: Date;
-  image: string;
-}
+export const eventSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  type: z.string(),
+  status: z.string(),
+  organizer: z.string(),
+  participants: z.array(z.string()),
+  startDate: z.date(),
+  endDate: z.date(),
+  image: z.string(),
+});
 
-export interface UpdateEventPayload extends CreateEventPayload {
-  _id: string;
-} 
+export type Event = z.infer<typeof eventSchema>;

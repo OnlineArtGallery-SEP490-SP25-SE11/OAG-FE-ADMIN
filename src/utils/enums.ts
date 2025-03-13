@@ -7,3 +7,9 @@ export enum BlogStatus {
   REVIEW = 'REVIEW',
   REJECTED = 'REJECTED'
 }
+
+export enum EventStatus {
+  ONGOING = 'ONGOING',
+  UPCOMING = 'UPCOMING',
+  COMPLETED = 'COMPLETED',
+}
