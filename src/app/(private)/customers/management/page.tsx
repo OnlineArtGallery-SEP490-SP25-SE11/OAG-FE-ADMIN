@@ -1,5 +1,5 @@
 import { Breadcrumb } from "@/components/ui.custom/breadcrumb";
-import { DataTable } from "@/app/blogs/data-table";
+import { DataTable } from "@/app/(private)/blogs/data-table";
 import { Customer, columns } from "./columns";
 
 export default function ManagementPage() {

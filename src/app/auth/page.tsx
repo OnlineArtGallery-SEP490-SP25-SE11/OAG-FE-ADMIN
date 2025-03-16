@@ -19,7 +19,9 @@ export default function AuthPage() {
 	}
 
 	const handleSignIn = async () => {
-		await signIn('google', { callbackUrl: '/dashboard' });
+		await signIn('google', { 
+			callbackUrl: `${window.location.protocol}//${window.location.hostname}:3001/` 
+		});
 	};
 
 	// Animation variants
