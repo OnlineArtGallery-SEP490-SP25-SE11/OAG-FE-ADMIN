@@ -62,6 +62,7 @@ export default function CreateEventPage() {
       router.push('/events/manage');
       router.refresh();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast({
         title: 'Error',
@@ -75,6 +76,7 @@ export default function CreateEventPage() {
   });
 
   const onSubmit = (data: EventForm) => {
+    console.log('data', data);
     setIsSubmitting(true);
     mutation.mutate({
       ...data,
@@ -148,7 +150,7 @@ export default function CreateEventPage() {
                     maxSize={5 * 1024 * 1024}
                     onFileUpload={(files) => {
                       const file = files[0];
-                      field.onChange(file.url);
+                      field.onChange(file);
                     }}
                   />
                 </FormControl>

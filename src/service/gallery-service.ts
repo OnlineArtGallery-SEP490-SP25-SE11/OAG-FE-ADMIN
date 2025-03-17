@@ -1,5 +1,5 @@
 import { ARTWORK_URL } from '@/utils/constants';
-import { GalleryTemplateData } from '@/app/(exhibitions)/[locale]/exhibitions/gallery/gallery-template-creator';
+import { GalleryTemplateData } from '@/app/(private)/gallery/gallery-template-creator';
 import { Vec3 } from '@/types/gallery';
 
 const exhibitions = [

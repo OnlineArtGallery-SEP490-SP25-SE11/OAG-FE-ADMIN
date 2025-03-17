@@ -225,7 +225,7 @@ console.log(event);
                         maxSize={5 * 1024 * 1024}
                         onFileUpload={(files) => {
                           const file = files[0];
-                          field.onChange(file.url);
+                          field.onChange(file);
                           setIsChangingImage(false);
                         }}
                       />

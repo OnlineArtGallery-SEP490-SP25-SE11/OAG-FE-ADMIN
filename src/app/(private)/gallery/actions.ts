@@ -42,7 +42,8 @@ export const saveGalleryTemplateAction = authenticatedAction
       const savedData = {
         ...templateData,
         id: templateData.id || `template_${Date.now()}`,
-        customColliders: templateData.customColliders || []
+        customColliders: templateData.customColliders || [],
+        artworks : [],
       };
 
       // Save the template
