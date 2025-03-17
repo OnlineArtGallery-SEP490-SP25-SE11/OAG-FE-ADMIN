@@ -2,8 +2,7 @@
 
 import { useState, Suspense, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import GalleryTemplateCreator from '../gallery-template-creator';
-import PreviewMode from '../preview-mode';
+import dynamic from 'next/dynamic';
 import { Loader } from '@/components/gallery/gallery-loader';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -13,6 +12,17 @@ import { type GalleryTemplateData } from '../gallery-template-creator';
 import { saveGalleryTemplateAction } from '../actions';
 import { useServerAction } from 'zsa-react';
 import { z } from 'zod';
+
+// Dynamically import components that rely on browser APIs with ssr: false
+const GalleryTemplateCreator = dynamic(
+  () => import('../gallery-template-creator'),
+  { ssr: false }
+);
+
+const PreviewMode = dynamic(
+  () => import('../preview-mode'),
+  { ssr: false }
+);
 
 // Define the gallery template validation schema
 const galleryTemplateSchema = z.object({
