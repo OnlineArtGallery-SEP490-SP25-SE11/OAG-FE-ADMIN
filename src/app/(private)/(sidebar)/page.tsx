@@ -1,10 +1,10 @@
 'use client';
-import { RevenueChart } from '@/app/dashboard/components/revenue-chart';
-import { UserActivityChart } from '@/app/dashboard/components/user-activity-chart';
-import { ArtworkCategoryChart } from '@/app/dashboard/components/artwork-category-chart';
-import { EngagementMetrics } from '@/app/dashboard/components/engagement-tricts';
+import { RevenueChart } from '@/app/(private)/(sidebar)/dashboard/components/revenue-chart';
+import { UserActivityChart } from '@/app/(private)/(sidebar)/dashboard/components/user-activity-chart';
+import { ArtworkCategoryChart } from '@/app/(private)/(sidebar)/dashboard/components/artwork-category-chart';
+import { EngagementMetrics } from '@/app/(private)/(sidebar)/dashboard/components/engagement-tricts';
 
-export default function Dashboard() {
+export default function Home() {
 	return (
 		<div className="container mx-auto px-4 py-8">
 			<header className="mb-8">

@@ -1,4 +1,3 @@
-import Sidebar from '@/components/ui.custom/sidebar';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
@@ -33,13 +32,7 @@ export default function RootLayout({
 			>
 				<Providers>
 					<div className="flex min-h-screen flex-col md:flex-row">
-						{/* Sidebar */}
-						<Sidebar />
-
-						{/* Main Content */}
-						<main className="flex-1 p-4 md:p-8 md:ml-64 transition-all duration-300 bg-gray-50 dark:bg-gray-900">
-							<div className="max-w-7xl mx-auto w-full">{children}</div>
-						</main>
+						{children}
 					</div>
 				</Providers>
 			</body>

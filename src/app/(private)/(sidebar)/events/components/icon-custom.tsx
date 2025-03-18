@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function X(props: any) {
     return (
       <svg
@@ -18,6 +19,7 @@ export function X(props: any) {
     )
   }
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function FileSearch(props: any) {
     return (
       <svg
@@ -40,6 +42,7 @@ export function X(props: any) {
     )
   }
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function Eye(props: any) {
     return (
       <svg

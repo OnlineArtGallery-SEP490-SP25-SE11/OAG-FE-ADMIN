@@ -62,6 +62,7 @@ export default function CreateEventPage() {
       router.push('/events/manage');
       router.refresh();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast({
         title: 'Error',
