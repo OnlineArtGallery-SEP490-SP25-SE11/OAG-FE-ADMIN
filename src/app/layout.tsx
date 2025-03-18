@@ -22,27 +22,27 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-									   children,
-								   }: Readonly<{
+	children,
+}: Readonly<{
 	children: React.ReactNode;
 }>) {
 	return (
 		<html lang="en">
-		<body
-			className={`${geistSans.variable} ${geistMono.variable} antialiased text-gray-700 dark:text-gray-300`}
-		>
-		<Providers>
-			<div className="flex min-h-screen flex-col md:flex-row">
-				{/* Sidebar */}
-				<Sidebar />
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} antialiased text-gray-700 dark:text-gray-300`}
+			>
+				<Providers>
+					<div className="flex min-h-screen flex-col md:flex-row">
+						{/* Sidebar */}
+						<Sidebar />
 
-				{/* Main Content */}
-				<main className="flex-1 p-4 md:p-8 md:ml-64 transition-all duration-300 bg-gray-50 dark:bg-gray-900">
-					<div className="max-w-7xl mx-auto w-full">{children}</div>
-				</main>
-			</div>
-		</Providers>
-		</body>
+						{/* Main Content */}
+						<main className="flex-1 p-4 md:p-8 md:ml-64 transition-all duration-300 bg-gray-50 dark:bg-gray-900">
+							<div className="max-w-7xl mx-auto w-full">{children}</div>
+						</main>
+					</div>
+				</Providers>
+			</body>
 		</html>
 	);
 }
