@@ -15,7 +15,6 @@ export default function Home() {
 					Monitor your key metrics and performance indicators
 				</p>
 			</header>
-
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				<DashboardCard title="Revenue Overview">
 					<RevenueChart />
