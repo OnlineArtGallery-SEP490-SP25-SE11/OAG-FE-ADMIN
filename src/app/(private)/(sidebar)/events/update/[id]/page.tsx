@@ -25,17 +25,17 @@ import { notFound } from 'next/navigation';
 import { EventStatus } from '@/utils/enums';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  type: string;
-  status: EventStatus;
-  organizer: string;
-  startDate: string;
-  endDate: string;
-}
+// interface Event {
+//   id: string;
+//   title: string;
+//   description: string;
+//   image: string;
+//   type: string;
+//   status: EventStatus;
+//   organizer: string;
+//   startDate: string;
+//   endDate: string;
+// }
 
 interface UpdateEventPageProps {
   params: {
@@ -49,6 +49,7 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
   const router = useRouter();
 
   // Lấy dữ liệu event bằng TanStack Query
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, isLoading, error } = useQuery<any>({
     queryKey: ['event', params.id],
     queryFn: () => eventService.getById(params.id),
@@ -107,6 +108,7 @@ console.log(event);
       router.push('/events/manage');
       router.refresh();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast({
         title: 'Error',

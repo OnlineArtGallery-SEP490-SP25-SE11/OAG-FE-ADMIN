@@ -57,7 +57,7 @@ import eventService from "@/service/event-service"
 import Link from "next/link"
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Eye, FileSearch, X } from "@/app/events/components/icon-custom"
+import { Eye, FileSearch, X } from "@/app/(private)/(sidebar)/events/components/icon-custom"
 import { EventStatus } from "@/utils/enums";
 export type Event = {
   _id: string
