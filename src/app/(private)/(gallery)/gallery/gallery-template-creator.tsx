@@ -37,7 +37,7 @@ export interface GalleryTemplateData {
   previewImage: string;
   customColliders: ColliderConfig[];
   // Add artwork positions configuration
-  artworks: {
+  artworkPlacements: {
     position: [number, number, number];
     rotation: [number, number, number];
   }[];
@@ -79,7 +79,7 @@ const defaultTemplate: GalleryTemplateData = {
   previewImage: '',
   customColliders: [],
   // Default artwork positions
-  artworks: []
+  artworkPlacements: []
 };
 
 export const GalleryTemplateContext = createContext<GalleryTemplateContextType>({

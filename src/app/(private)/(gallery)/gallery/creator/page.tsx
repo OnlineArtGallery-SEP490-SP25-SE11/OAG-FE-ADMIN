@@ -32,7 +32,7 @@ const galleryTemplateSchema = z.object({
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
   customColliders: z.array(z.any()).optional(),
-  artworks: z.array(
+  artworkPlacements: z.array(
     z.object({
       position: z.tuple([z.number(), z.number(), z.number()]),
       rotation: z.tuple([z.number(), z.number(), z.number()])
@@ -40,7 +40,7 @@ const galleryTemplateSchema = z.object({
   ).default([]),
 });
 
-export default function GalleryCreatorPage({ params }: { params: { locale: string } }) {
+export default function GalleryCreatorPage() {
   const router = useRouter();
   const [activeView, setActiveView] = useState<'edit' | 'preview'>('edit');
   const [savedTemplate, setSavedTemplate] = useState<GalleryTemplateData | null>(null);
@@ -70,7 +70,7 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
       });
 
       setTimeout(() => {
-        router.push(`/${params.locale}/exhibitions/templates`);
+        // router.push(`//exhibitions/templates`);
       }, 1500);
     }
   });
@@ -183,7 +183,7 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
           <div className="">
             <Button 
               variant="outline" 
-              onClick={() => router.push(`/${params.locale}/exhibitions/gallery`)}
+              onClick={() => router.push(`/exhibitions/gallery`)}
             >
               Cancel
             </Button>

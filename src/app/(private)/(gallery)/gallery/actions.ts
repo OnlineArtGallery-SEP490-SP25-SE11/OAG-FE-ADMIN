@@ -22,7 +22,13 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]),
   previewImage: z.string().min(1, "Preview image is required"),
-  customColliders: z.array(z.any()).optional()
+  customColliders: z.array(z.any()).optional(),
+  artworkPlacements: z.array(
+    z.object({
+      position: z.tuple([z.number(), z.number(), z.number()]),
+      rotation: z.tuple([z.number(), z.number(), z.number()])
+    })
+  ).default([]),
 });
 
 export const saveGalleryTemplateAction = authenticatedAction
@@ -43,7 +49,7 @@ export const saveGalleryTemplateAction = authenticatedAction
         ...templateData,
         id: templateData.id || `template_${Date.now()}`,
         customColliders: templateData.customColliders || [],
-        artworks: [],
+        artworks: templateData.artworkPlacements || [],
       };
 
       // Save the template

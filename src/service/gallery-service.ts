@@ -279,7 +279,7 @@ export async function getGalleryTemplates() {
         modelRotation: [0, 0, 0] as [number, number, number],
         modelPosition: [0, 0, 0] as [number, number, number],
         customColliders: [],
-        artworks: [
+        artworkPlacements: [
             {
                 position : [0, 0, 0] as Vec3,
                 rotation : [0, 0, 0] as Vec3
@@ -299,7 +299,7 @@ export async function getGalleryTemplates() {
         modelRotation: [0, 0, 0] as [number, number, number],
         modelPosition: [0, 0, 0] as [number, number, number],
         customColliders: [],
-        artworks: []
+        artworkPlacements: []
       }
     ];
   } catch (error) {
@@ -330,7 +330,7 @@ export async function getGalleryTemplate(id: string): Promise<GalleryTemplateDat
         modelPosition: foundTemplate.modelPosition || [0, 0, 0] as [number, number, number],
         previewImage: foundTemplate.previewImage || '',
         customColliders: foundTemplate.customColliders || [],
-        artworks: foundTemplate.artworks || [] // Ensure artworks array exists
+        artworkPlacements: foundTemplate.artworkPlacements || [] // Ensure artwork placements array exists
       };
     }
     
