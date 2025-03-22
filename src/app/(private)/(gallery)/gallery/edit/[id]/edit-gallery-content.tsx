@@ -31,6 +31,8 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]).optional(),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
+  planImage: z.string().min(1, "Plane image is required"),
+  isPremium: z.boolean().default(false),
   customColliders: z.array(z.any()).optional(),
   artworkPlacements: z.array(
     z.object({
@@ -64,14 +66,8 @@ export default function EditGalleryContent({
         variant: 'destructive'
       });
     },
-    onSuccess: (result) => {
-      const templateData = result.data;
-      setEditedTemplate(templateData);
-      setValidationErrors({});
-
-      // Add revalidation to refresh server data
+    onSuccess: () => {
       router.refresh();
-
       toast({
         title: 'Gallery template updated',
         description: 'Your gallery template has been updated successfully.',

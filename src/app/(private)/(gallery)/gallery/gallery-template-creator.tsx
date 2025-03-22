@@ -15,8 +15,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ColliderConfig } from '@/types/gallery';
 import GalleryPreview from './gallery-preview';
 import ColliderEditor from './collider-editor';
-import Image from 'next/image';
+// import Image from 'next/image';
 import ArtworkPositionEditor from './artwork-position-editor';
+import Image from 'next/image';
 
 // Types
 export interface GalleryTemplateData {
@@ -35,6 +36,8 @@ export interface GalleryTemplateData {
   modelRotation: [number, number, number];
   modelPosition: [number, number, number];
   previewImage: string;
+  planImage: string;
+  isPremium: boolean;
   customColliders: ColliderConfig[];
   // Add artwork positions configuration
   artworkPlacements: {
@@ -77,6 +80,8 @@ const defaultTemplate: GalleryTemplateData = {
   modelRotation: [0, 0, 0],
   modelPosition: [0, 0, 0],
   previewImage: '',
+  planImage: '',
+  isPremium: false,
   customColliders: [],
   // Default artwork positions
   artworkPlacements: []
@@ -192,6 +197,19 @@ export default function GalleryTemplateCreator({
     // toast.success('Preview image uploaded');
   };
 
+  const handleplanImageUpload = (files: File[]) => {
+    if (files.length === 0) return;
+    setIsLoading(true);
+  }
+
+  const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
+    if (files.length > 0) {
+      updateTemplate({ planImage: files[0].url });
+    }
+    setIsLoading(false);
+    // toast.success('Plane image uploaded');
+  };
+
   // Save template
   const saveTemplate = async () => {
     setIsLoading(true);
@@ -285,6 +303,7 @@ export default function GalleryTemplateCreator({
               <div className="space-y-2">
                 <Label>Preview Image</Label>
                 <FileUploader
+                  maxFiles={10}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                   multiple={false}
                   onFilesChange={handlePreviewUpload}
@@ -302,6 +321,41 @@ export default function GalleryTemplateCreator({
                     />
                   </div>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label>Floor Plane Image</Label>
+                <FileUploader
+                  maxFiles={1}
+                  accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
+                  multiple={false}
+                  onFilesChange={handleplanImageUpload}
+                  onFileUpload={handleplanImageUploadComplete}
+                />
+                {templateData.planImage && (
+                  <div className="mt-2 relative w-full aspect-[4/3] rounded-md overflow-hidden border">
+                    <Image
+                      width={400}
+                      height={300}
+                      src={templateData.planImage}
+                      alt="Floor Plane"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is-premium">Premium Template</Label>
+                  <Switch
+                    id="is-premium"
+                    checked={templateData.isPremium}
+                    onCheckedChange={(checked) => updateTemplate({ isPremium: checked })}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Mark this template as premium content
+                </p>
               </div>
             </TabsContent>
 

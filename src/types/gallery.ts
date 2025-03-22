@@ -61,7 +61,6 @@ export interface DoorWallProps {
 	material: WallMaterial;
 }
 
-
 export interface BaseColliderConfig {
 	position: Vec3;
 	rotation: Vec3;
@@ -153,5 +152,49 @@ export interface ExhibitionType {
   };
 }
 
+export interface Gallery {
+	_id: string;
+	name: string;
+	description: string;
+	dimensions: {
+		xAxis: number;
+		yAxis: number;
+		zAxis: number;
+	};
+	wallThickness: number;
+	wallHeight: number;
+	modelPath: string;
+	modelPosition: Vec3;
+	modelRotation: Vec3;
+	modelScale: number;
+	previewImage: string;
+	planImage: string;
+	isPremium: boolean;
+	artworkPlacements: {
+		position: Vec3;
+		rotation: Vec3;
+	}[];
+	customCollider?: {
+		shape: 'box' | 'curved';
+		args: Vec3;
+		position: Vec3;
+	};
+}
 
 export type ColliderConfig = BoxColliderConfig | CurvedColliderConfig;
+export type GetGalleriesResponse = {
+	galleries: Gallery[];
+	pagination: {
+		total: number;
+		page: number;
+		limit: number;
+		pages: number;
+		hasNext: boolean;
+		hasPrev: boolean;
+	};
+};
+	
+
+export type GalleryRequestResponse = {
+	gallery: Gallery;
+}

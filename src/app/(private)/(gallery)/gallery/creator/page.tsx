@@ -10,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { type GalleryTemplateData } from '../gallery-template-creator';
-import { saveGalleryTemplateAction } from '../actions';
+import { createGalleryTemplateAction } from '../actions';
 import { useServerAction } from 'zsa-react';
 import { z } from 'zod';
 
@@ -31,6 +31,8 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]).optional(),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
+  planImage: z.string().min(1, "Plane image is required"),
+  isPrenium: z.boolean().default(false),
   customColliders: z.array(z.any()).optional(),
   artworkPlacements: z.array(
     z.object({
@@ -43,12 +45,13 @@ const galleryTemplateSchema = z.object({
 export default function GalleryCreatorPage() {
   const router = useRouter();
   const [activeView, setActiveView] = useState<'edit' | 'preview'>('edit');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [savedTemplate, setSavedTemplate] = useState<GalleryTemplateData | null>(null);
   const [editedTemplate, setEditedTemplate] = useState<GalleryTemplateData | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const { execute, isPending } = useServerAction(saveGalleryTemplateAction, {
+  const { execute, isPending } = useServerAction(createGalleryTemplateAction, {
     onError: (err) => {
       toast({
         title: 'Error',
@@ -56,13 +59,7 @@ export default function GalleryCreatorPage() {
         variant: 'destructive'
       });
     },
-    onSuccess: (result) => {
-      const templateData = result.data;
-      setSavedTemplate(templateData);
-      setEditedTemplate(templateData);
-      setValidationErrors({});
-      console.log('Saved template:', templateData);
-      
+    onSuccess: () => {
       toast({
         title: 'Gallery template saved',
         description: 'Your gallery template has been saved successfully.',
@@ -70,8 +67,8 @@ export default function GalleryCreatorPage() {
       });
 
       setTimeout(() => {
-        // router.push(`//exhibitions/templates`);
-      }, 1500);
+        router.push(`/gallery`);
+      }, 1000);
     }
   });
   
@@ -117,7 +114,7 @@ export default function GalleryCreatorPage() {
       return;
     }
     
-    console.log('Saving gallery template:', finalTemplateData);
+    console.log('Saving gallery template1:', finalTemplateData);
     await execute(finalTemplateData);
   };
 

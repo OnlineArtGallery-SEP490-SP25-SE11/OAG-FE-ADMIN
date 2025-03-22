@@ -1,6 +1,7 @@
 import {
 	BarChart2,
 	Bell,
+	Cylinder,
 	FileText,
 	Home,
 	Newspaper,
@@ -44,6 +45,7 @@ const menuItems = [
 	 },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
 	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
+	{ href: '/gallery', label: 'Gallery', icon: Cylinder },
 	{ href: '/settings', label: 'Settings', icon: Settings },
 	
 ];

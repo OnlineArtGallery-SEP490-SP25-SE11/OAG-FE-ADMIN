@@ -1,5 +1,5 @@
 import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { DataTable } from "@/components/ui.custom/data-table";
 import { getBlogs } from "@/service/blog-service";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";

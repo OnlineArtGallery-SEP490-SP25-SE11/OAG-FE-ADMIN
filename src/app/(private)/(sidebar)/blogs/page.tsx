@@ -3,7 +3,13 @@ import { BlogsTable, TableSkeleton } from "./blog-table";
 import { Breadcrumb } from "@/components/ui.custom/breadcrumb";
 import { CreateBlogButton } from "./create-blog-button";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Metadata } from "next";
 
+
+export const metadata: Metadata = {
+  title: 'Blogs',
+  description: 'Manage Blogs',
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function BlogsPage(props: {
   searchParams?: Promise<{

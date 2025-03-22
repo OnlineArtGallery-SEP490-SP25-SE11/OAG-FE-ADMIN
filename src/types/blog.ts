@@ -46,7 +46,6 @@ export type GetPublishedBlogsResponse = {
   };
 };
 
-
 export type GetBlogsResponse = {
   blogs: Blog[];
   pagination: Pagination;

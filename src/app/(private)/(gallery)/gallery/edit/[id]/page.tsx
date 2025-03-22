@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { getGalleryTemplate } from '@/service/gallery-service';
 import EditGalleryContent from './edit-gallery-content';
 import { Loader } from '@/components/gallery-loader';
+import { notFound } from 'next/navigation';
 
 export default async function EditGalleryTemplatePage({
   params
@@ -10,8 +11,11 @@ export default async function EditGalleryTemplatePage({
   params: { locale: string; id: string }
 }) {
   // Fetch template data on the server
-  const templateData = await getGalleryTemplate(params.id);
-  
+  const res = await getGalleryTemplate(params.id);
+  const templateData = res.data;
+  if (!templateData) {
+    return notFound();
+  } 
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
