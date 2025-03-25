@@ -1,29 +1,23 @@
 import { createApi } from "@/lib/axios";
+import { BlogTagResponse } from "@/types/blog";
 import { ApiResponse } from "@/types/response";
-import axiosInstance from "axios";
+import { handleApiError } from "@/utils/error-handler";
 
 
 /**
  * Fetches all blog tags from the API
  * @returns {Promise<BlogTag[]>} Array of blog tags
  */
-export async function getTags() {
+export async function getTags(): Promise<ApiResponse<BlogTagResponse>> {
   try {
-    const res: ApiResponse = await createApi().get('/blog-tag');
-    if (!res?.data) {
-      return [];
-    }
+    const res = await createApi().get('/blog-tag');
     return res.data;
-   
+
   } catch (error) {
-     if (axiosInstance.isAxiosError(error)) {
-        console.error(error);
-        console.error(
-          `Error when update blog: ${error.response?.data.errorCode}`
-        );
-      } else {
-        console.error(`Unexpected error: ${error}`);
-      }
-    return [];
+    console.error(`Error getting blog tags:`, error);
+    return handleApiError<BlogTagResponse>(
+      error,
+      'Failed to fetch blog tags'
+    );
   }
 }

@@ -12,61 +12,72 @@ import { BlogStatus } from "@/utils/enums";
 export const columns: ColumnDef<Blog>[] = [
   {
     accessorKey: "title",
-    header: "Title",
+    header: () => <div className="w-[200px]">Title</div>,
     cell: ({ row }) => {
       const title = row.original?.title;
-      return <div className="font-medium">{title || "Unknown"}</div>;
+      return (
+        <div className="font-medium max-w-[200px] truncate h-[60px] flex items-center" title={title || "Unknown"}>
+          {title || "Unknown"}
+        </div>
+      );
     },
+    size: 200,
   },
   {
     accessorKey: "image",
-    header: "Thumbnail",
+    header: () => <div className="text-center w-[120px]">Thumbnail</div>,
     cell: ({ row }) => {
       const image = row.original?.image || "/placeholder-blog.jpg";
       const title = row.original?.title || "Blog thumbnail";
       
       return (
-        <div className="flex justify-center">
-          <Image
-            src={image}
-            alt={title}
-            width={80}
-            height={45}
-            className="rounded-md object-cover border border-gray-200 dark:border-gray-700"
-          />
+        <div className="flex justify-center items-center h-[60px] w-[120px]">
+          <div className="relative h-[50px] w-[90px] overflow-hidden rounded-md border border-gray-200 dark:border-gray-700">
+            <Image
+              src={image}
+              alt={title}
+              fill
+              sizes="90px"
+              className="object-cover"
+            />
+          </div>
         </div>
       );
     },
+    size: 120,
   },
   {
     accessorKey: "author",
-    header: "Author",
+    header: () => <div className="w-[150px]">Author</div>,
     cell: ({ row }) => {
       const author = row.original?.author;
-      return <div className="font-medium">{author?.name || "Unknown"}</div>;
+      return <div className="font-medium h-[60px] flex items-center justify-center w-[150px]">{author.name}</div>;
     },
+    size: 150,
   },
   {
     accessorKey: "views",
-    header: ({ column }) => <SortableHeader column={column} title="Views" fieldName="views" />,
+    header: ({ column }) => <div className="w-[100px]"><SortableHeader column={column} title="Views" fieldName="views" /></div>,
     cell: ({ row }) => {
       const views = row.original?.views || 0;
-      return <div className="font-medium text-center">{views}</div>;
+      return <div className="font-medium text-center h-[60px] flex items-center justify-center w-[100px]">{views}</div>;
     },
+    size: 100,
   },
   {
     accessorKey: "updatedAt",
-    header: ({ column }) => <SortableHeader column={column} title="Updated At" fieldName="updatedAt" />,
+    header: ({ column }) => <div className="w-[150px]"><SortableHeader column={column} title="Updated At" fieldName="updatedAt" /></div>,
     cell: ({ row }) => {
       const updatedAt = row.original?.updatedAt;
-      return <div className="font-medium text-center">
+      return <div className="font-medium text-center h-[60px] flex items-center justify-center w-[150px]">
         {updatedAt ? new Date(updatedAt).toLocaleDateString() : "N/A"}
       </div>;
     },
+    size: 150,
   },
   {
     accessorKey: "status",
-    header: ({ column }) => <FilterHeader column={column} title="Status" paramName="status" options={statusOptions} />,
+    header: ({ column }) => <div className="w-[150px]"><FilterHeader column={column} title="Status" paramName="status" options={statusOptions} /></div>,
     cell: ({ row }) => {
       const status = row.original?.status || BlogStatus.DRAFT;
       
@@ -80,11 +91,13 @@ export const columns: ColumnDef<Blog>[] = [
       };
 
       return (
-        <Badge
-          className={`${statusStyles[status] || statusStyles.DRAFT} font-medium mx-auto`}
-        >
-          {status.replace('_', ' ')}
-        </Badge>
+        <div className="h-[60px] flex items-center justify-center w-[150px]">
+          <Badge
+            className={`${statusStyles[status] || statusStyles.DRAFT} font-medium`}
+          >
+            {status.replace('_', ' ')}
+          </Badge>
+        </div>
       );
     },
     filterFn: (row, id, value: string[]) => {
@@ -92,18 +105,20 @@ export const columns: ColumnDef<Blog>[] = [
       const status = row.getValue(id) as string;
       return value.includes(status || BlogStatus.DRAFT);
     },
+    size: 150,
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Actions</div>,
+    header: () => <div className="text-center w-[120px]">Actions</div>,
     cell: ({ row }) => {
       const blog = row.original;
       return (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center items-center gap-2 h-[60px] w-[120px]">
           <EditTags blogId={blog._id} currentTags={blog.tags} />
           <BlogActions blog={blog} />
         </div>
       );
     },
+    size: 120,
   }
 ];

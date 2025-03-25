@@ -1,6 +1,9 @@
 import { ARTWORK_URL } from '@/utils/constants';
 import { GalleryTemplateData } from '@/app/(private)/(gallery)/gallery/gallery-template-creator';
-import { Vec3 } from '@/types/gallery';
+import { GalleryRequestResponse, GetGalleriesResponse } from '@/types/gallery';
+import { ApiResponse } from '@/types/response';
+import { createApi } from '@/lib/axios';
+import { handleApiError } from '@/utils/error-handler';
 
 const exhibitions = [
     {
@@ -180,163 +183,116 @@ export async function getExhibitions(id: string) {
 
 // Function to upload an asset to cloud storage
 export async function uploadAsset(file: File) {
-  // Create a FormData object to send the file
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', 'gallery_assets'); // Your Cloudinary upload preset
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'gallery_assets'); // Your Cloudinary upload preset
 
-  try {
-    // Replace with your actual upload endpoint
-    const response = await fetch('https://api.cloudinary.com/v1_1/your-cloud-name/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Upload failed with status ${response.status}`);
+    try {
+        // Replace with your actual upload endpoint
+        const response = await fetch('https://api.cloudinary.com/v1_1/your-cloud-name/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`Upload failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        return {
+            url: data.secure_url,
+            publicId: data.public_id,
+            width: data.width,
+            height: data.height,
+            format: data.format,
+        };
+    } catch (error) {
+        console.error('Error uploading asset:', error);
+        throw new Error('Failed to upload asset');
     }
-    
-    const data = await response.json();
-    
-    return {
-      url: data.secure_url,
-      publicId: data.public_id,
-      width: data.width,
-      height: data.height,
-      format: data.format,
-    };
-  } catch (error) {
-    console.error('Error uploading asset:', error);
-    throw new Error('Failed to upload asset');
-  }
+}
+
+export async function createGalleryTemplate(accessToken: string, templateData: GalleryTemplateData): Promise<ApiResponse<GalleryRequestResponse>> {
+    try {
+        const res = await createApi(accessToken).post('/gallery', templateData);
+        return res.data;
+    } catch (error) {
+        console.error('Error creating gallery template:', error);
+        return handleApiError<GalleryRequestResponse>(
+            error,
+            'Failed to create gallery template'
+        );
+    }
 }
 
 // Function to save or update a gallery template
-export async function saveGalleryTemplate(templateData: GalleryTemplateData): Promise<GalleryTemplateData> {
-  try {
-    // For new templates (no ID)
-    if (!templateData.id) {
-      // In a real app, call your API endpoint
-      // const response = await fetch('/api/gallery/templates', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(templateData),
-      // });
-      
-      // For this example, we'll simulate an API response
-      console.log('Creating new template:', templateData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Return mock response with generated ID
-      return {
-        ...templateData,
-        id: `template_${Date.now()}`,
-      };
-    } 
-    // For updating existing templates
-    else {
-      // const response = await fetch(`/api/gallery/templates/${templateData.id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(templateData),
-      // });
-      
-      console.log('Updating template:', templateData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Return the updated template
-      return templateData;
+export async function saveGalleryTemplate(accessToken: string, templateData: GalleryTemplateData): Promise<ApiResponse<GalleryRequestResponse>> {
+    try {
+        const res = await createApi(accessToken).put(`/gallery/${templateData.id}`, templateData);
+        return res.data;
     }
-  } catch (error) {
-    console.error('Error saving gallery template:', error);
-    throw new Error('Failed to save gallery template');
-  }
+
+    catch (error) {
+        console.error('Error saving gallery template:', error);
+        return handleApiError<GalleryRequestResponse>(
+            error,
+            'Failed to save gallery template'
+        );
+    }
 }
 
 // Function to get a list of gallery templates
-export async function getGalleryTemplates() {
-  try {
-    // Replace with actual API call
-    // const response = await fetch('/api/gallery/templates');
-    // return await response.json();
-    
-    // Mock response for demo - Now with all required properties
-    return [
-      {
-        id: 'template_1',
-        name: 'Modern Gallery',
-        description: 'A sleek, contemporary space with clean lines',
-        previewImage: '/gallery-preview.jpg',
-        dimensions: { xAxis: 40, yAxis: 10, zAxis: 40 },
-        wallThickness: 0.2,
-        wallHeight: 3,
-        modelPath: '/modern-a1-gallery.glb',
-        modelScale: 3,
-        modelRotation: [0, 0, 0] as [number, number, number],
-        modelPosition: [0, 0, 0] as [number, number, number],
-        customColliders: [],
-        artworks: [
-            {
-                position : [0, 0, 0] as Vec3,
-                rotation : [0, 0, 0] as Vec3
-            }
-        ]
-      },
-      {
-        id: 'template_2',
-        name: 'Classic Museum',
-        description: 'Traditional museum layout with elegant architecture',
-        previewImage: '/gallery-preview.jpg',
-        dimensions: { xAxis: 50, yAxis: 15, zAxis: 50 },
-        wallThickness: 0.2,
-        wallHeight: 4,
-        modelPath: '/modern-a2-gallery.glb',
-        modelScale: 4,
-        modelRotation: [0, 0, 0] as [number, number, number],
-        modelPosition: [0, 0, 0] as [number, number, number],
-        customColliders: [],
-        artworks: []
-      }
-    ];
-  } catch (error) {
-    console.error('Error getting gallery templates:', error);
-    throw new Error('Failed to fetch gallery templates');
-  }
+export async function getGalleryTemplates(params?: {
+    page?: number;
+    limit?: number;
+    sort?: Record<string, 1 | -1>;
+    search?: string;
+}): Promise<ApiResponse<GetGalleriesResponse>> {
+    try {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.set('page', params.page.toString());
+        if (params?.limit) queryParams.set('limit', params.limit.toString());
+        if (params?.sort) queryParams.set('sort', JSON.stringify(params.sort));
+        if (params?.search) queryParams.set('search', params.search);
+
+        const url = `/gallery${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+        const res = await createApi().get(url);
+        return res.data;
+    } catch (error) {
+        console.error('Error getting gallery templates:', error);
+        return handleApiError<GetGalleriesResponse>(
+            error,
+            'Failed to fetch gallery templates'
+        );
+    }
 }
 
 // Function to get a single gallery template by ID
-export async function getGalleryTemplate(id: string): Promise<GalleryTemplateData> {
-  try {
-    // Fetch data or use mock data
-    const templates = await getGalleryTemplates();
-    const foundTemplate = templates.find(template => template.id === id);
-    
-    if (foundTemplate) {
-      // Return all required properties, adding default values if missing
-      return {
-        id: foundTemplate.id,
-        name: foundTemplate.name,
-        description: foundTemplate.description,
-        dimensions: foundTemplate.dimensions || { xAxis: 30, yAxis: 10, zAxis: 40 },
-        wallThickness: foundTemplate.wallThickness || 0.2,
-        wallHeight: foundTemplate.wallHeight || 3,
-        modelPath: foundTemplate.modelPath || '',
-        modelScale: foundTemplate.modelScale || 1,
-        modelRotation: foundTemplate.modelRotation || [0, 0, 0] as [number, number, number],
-        modelPosition: foundTemplate.modelPosition || [0, 0, 0] as [number, number, number],
-        previewImage: foundTemplate.previewImage || '',
-        customColliders: foundTemplate.customColliders || [],
-        artworks: foundTemplate.artworks || [] // Ensure artworks array exists
-      };
+export async function getGalleryTemplate(id: string): Promise<ApiResponse<GalleryTemplateData>> {
+    try {
+        const res = await createApi().get(`/gallery/${id}`);
+        return res.data;
+    } catch (error) {
+        console.error(`Error getting gallery template ${id}:`, error);
+        return handleApiError<GalleryTemplateData>(
+            error,
+            'Failed to fetch gallery template'
+        );
     }
-    
-    throw new Error(`Gallery template with ID "${id}" not found`);
-  } catch (error) {
-    console.error(`Error getting gallery template ${id}:`, error);
-    throw new Error('Failed to fetch gallery template');
-  }
+}
+
+// Function to delete a gallery template
+export async function deleteGalleryTemplate(accessToken: string, id: string): Promise<ApiResponse<void>> {
+    try {
+        const res = await createApi(accessToken).delete(`/gallery/${id}`);
+        return res.data;
+    } catch (error) {
+        console.error('Error deleting gallery template:', error);
+        return handleApiError<void>(
+            error,
+            'Failed to delete gallery template'
+        );
+    }
 }

@@ -1,6 +1,8 @@
 import { createApi } from "@/lib/axios";
+import { BlogRequestResponse, GetBlogsResponse } from "@/types/blog";
 import { ApiResponse } from "@/types/response";
 import { BlogStatus } from "@/utils/enums";
+import { handleApiError } from "@/utils/error-handler";
 import axiosInstance from 'axios';
 
 export const deleteBlog = async (blogId: string) => {
@@ -45,7 +47,7 @@ export const getBlogs = async ({
 	filter?: Record<string, any>;
 	status?: string;
 	search?: string;
-}) => {
+}): Promise<ApiResponse<GetBlogsResponse>> => {
 	try {
 		const queryParams = new URLSearchParams();
 
@@ -64,31 +66,13 @@ export const getBlogs = async ({
 
 		const queryString = queryParams.toString();
 		const url = `/blog${queryString ? `?${queryString}` : ''}`;
-		const res = await createApi().get(url);
-		return {
-			data: res.data.blogs || [],
-			pagination: res.data.pagination || {
-				total: 0,
-				page: 1,
-				limit: 10,
-				pages: 1,
-				hasNext: false,
-				hasPrev: false
-			}
-		};
+		const res = await createApi()(url);
+		return res.data;
 	} catch (error) {
 		console.error("Error fetching blogs:", error);
-		return {
-			data: [],
-			pagination: {
-				total: 0,
-				page: 1,
-				limit: 10,
-				pages: 1,
-				hasNext: false,
-				hasPrev: false
-			}
-		};
+		return handleApiError(error,
+			'Error fetching blogs'
+		);
 	}
 };
 
@@ -106,7 +90,7 @@ export async function updateBlog({
 		status?: BlogStatus;
 		tags?: string[];
 	};
-}) {
+}): Promise<ApiResponse<BlogRequestResponse>> {
 	const payload: {
 		title?: string;
 		content?: string;
@@ -121,29 +105,20 @@ export async function updateBlog({
 	if (updateData.status) payload.status = updateData.status;
 	if (updateData.tags) payload.tags = updateData.tags;
 	try {
-		const res: ApiResponse = await createApi(accessToken).put(
+		const res = await createApi(accessToken).put(
 			`/blog/${updateData._id}`,
-			payload,
-			{
-				headers: {
-					Authorization: `Bearer ${accessToken}`
-				}
-			}
+			payload
 		);
 		return res.data;
-	} catch (err) {
-		if (axiosInstance.isAxiosError(err)) {
-			console.error(err);
-			console.error(
-				`Error when update blog: ${err.response?.data.errorCode}`
-			);
-		} else {
-			console.error(`Unexpected error: ${err}`);
-		}
+	} catch (error) {
+		console.error(`Error when updating blog:`, error);
+		return handleApiError<BlogRequestResponse>(
+			error,
+			'Failed to update blog',
+			'update_blog_error'
+		);
 	}
 }
-
-
 
 export async function approveBlog({
 	accessToken,
@@ -151,9 +126,9 @@ export async function approveBlog({
 }: {
 	accessToken: string;
 	blogId: string;
-}) {
+}): Promise<ApiResponse<null>> {
 	try {
-		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/approve`);
+		const res = await createApi(accessToken).put(`/blog/${blogId}/approve`);
 		return res.data;
 	} catch (err) {
 		if (axiosInstance.isAxiosError(err)) {
@@ -164,6 +139,7 @@ export async function approveBlog({
 		} else {
 			console.error(`Unexpected error: ${err}`);
 		}
+		throw err;
 	}
 }
 
@@ -176,10 +152,10 @@ export async function rejectBlog({
 	accessToken: string;
 	blogId: string;
 	reason: string;
-}) {
+}): Promise<ApiResponse<null>> {
 	try {
 
-		const res: ApiResponse = await createApi(accessToken).put(`/blog/${blogId}/reject`, { reason });
+		const res = await createApi(accessToken).put(`/blog/${blogId}/reject`, { reason });
 		return res.data;
 	} catch (error) {
 		if (axiosInstance.isAxiosError(error)) {
@@ -190,5 +166,6 @@ export async function rejectBlog({
 		} else {
 			console.error(`Unexpected error: ${error}`);
 		}
+		throw error;
 	}
 }

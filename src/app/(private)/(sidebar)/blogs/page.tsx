@@ -1,9 +1,15 @@
 import { Suspense } from "react";
-import { BlogsTable, TableSkeleton } from "./blog-table";
-import { Breadcrumb } from "@/components/ui.custom/breadcrumb";
+import { BlogsTable } from "./blog-table";
+import { TableSkeleton } from '@/components/ui.custom/table-skeleton';
 import { CreateBlogButton } from "./create-blog-button";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Metadata } from "next";
 
+
+export const metadata: Metadata = {
+  title: 'Blogs',
+  description: 'Manage Blogs',
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function BlogsPage(props: {
   searchParams?: Promise<{
@@ -17,14 +23,12 @@ export default async function BlogsPage(props: {
 }) {
   const searchParams = await props.searchParams;
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Breadcrumb
-          items={[
-            { label: "Dashboard", link: "/admin" },
-            { label: "Blogs" }
-          ]}
-        />
+    <div className="container py-10 mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight">Blog Management</h1>
+          <p className="text-muted-foreground mt-1">Create and manage your blogs</p>
+        </div>
         <CreateBlogButton />
       </div>
       <ErrorBoundary fallback={<div>Something went wrong. Please try again later.</div>}>

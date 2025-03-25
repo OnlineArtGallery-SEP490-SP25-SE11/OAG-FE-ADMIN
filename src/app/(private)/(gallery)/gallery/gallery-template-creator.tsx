@@ -15,8 +15,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ColliderConfig } from '@/types/gallery';
 import GalleryPreview from './gallery-preview';
 import ColliderEditor from './collider-editor';
-import Image from 'next/image';
+// import Image from 'next/image';
 import ArtworkPositionEditor from './artwork-position-editor';
+import Image from 'next/image';
 
 // Types
 export interface GalleryTemplateData {
@@ -35,9 +36,11 @@ export interface GalleryTemplateData {
   modelRotation: [number, number, number];
   modelPosition: [number, number, number];
   previewImage: string;
+  planImage: string;
+  isPremium: boolean;
   customColliders: ColliderConfig[];
   // Add artwork positions configuration
-  artworks: {
+  artworkPlacements: {
     position: [number, number, number];
     rotation: [number, number, number];
   }[];
@@ -77,9 +80,11 @@ const defaultTemplate: GalleryTemplateData = {
   modelRotation: [0, 0, 0],
   modelPosition: [0, 0, 0],
   previewImage: '',
+  planImage: '',
+  isPremium: false,
   customColliders: [],
   // Default artwork positions
-  artworks: []
+  artworkPlacements: []
 };
 
 export const GalleryTemplateContext = createContext<GalleryTemplateContextType>({
@@ -192,6 +197,19 @@ export default function GalleryTemplateCreator({
     // toast.success('Preview image uploaded');
   };
 
+  const handleplanImageUpload = (files: File[]) => {
+    if (files.length === 0) return;
+    setIsLoading(true);
+  }
+
+  const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
+    if (files.length > 0) {
+      updateTemplate({ planImage: files[0].url });
+    }
+    setIsLoading(false);
+    // toast.success('Plane image uploaded');
+  };
+
   // Save template
   const saveTemplate = async () => {
     setIsLoading(true);
@@ -217,9 +235,9 @@ export default function GalleryTemplateCreator({
       addCollider, updateCollider, removeCollider,
       isLoading
     }}>
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex h-full">
         {/* 3D Preview Panel */}
-        <div className="w-2/3 h-full relative bg-gray-900">
+        <div className="w-2/3 relative bg-gray-900">
           <Canvas shadows>
             <PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75} />
             <ambientLight intensity={0.5} />
@@ -243,7 +261,7 @@ export default function GalleryTemplateCreator({
         </div>
 
         {/* Control Panel */}
-        <div className="w-1/3 h-full bg-white p-4 overflow-y-auto">
+        <div className="w-1/3 bg-white p-4 overflow-y-auto">
           <div className="mb-4">
             <h2 className="text-2xl font-bold">Gallery Template Creator</h2>
             <p className="text-gray-600">Design your custom gallery template</p>
@@ -285,6 +303,7 @@ export default function GalleryTemplateCreator({
               <div className="space-y-2">
                 <Label>Preview Image</Label>
                 <FileUploader
+                  maxFiles={10}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                   multiple={false}
                   onFilesChange={handlePreviewUpload}
@@ -302,6 +321,41 @@ export default function GalleryTemplateCreator({
                     />
                   </div>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label>Floor Plane Image</Label>
+                <FileUploader
+                  maxFiles={1}
+                  accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
+                  multiple={false}
+                  onFilesChange={handleplanImageUpload}
+                  onFileUpload={handleplanImageUploadComplete}
+                />
+                {templateData.planImage && (
+                  <div className="mt-2 relative w-full aspect-[4/3] rounded-md overflow-hidden border">
+                    <Image
+                      width={400}
+                      height={300}
+                      src={templateData.planImage}
+                      alt="Floor Plane"
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is-premium">Premium Template</Label>
+                  <Switch
+                    id="is-premium"
+                    checked={templateData.isPremium}
+                    onCheckedChange={(checked) => updateTemplate({ isPremium: checked })}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Mark this template as premium content
+                </p>
               </div>
             </TabsContent>
 

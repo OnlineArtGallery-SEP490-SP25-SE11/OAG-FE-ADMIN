@@ -1,5 +1,5 @@
 import { columns } from "./columns";
-import { DataTable } from "./data-table";
+import { DataTable } from "@/components/ui.custom/data-table";
 import { getBlogs } from "@/service/blog-service";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +17,8 @@ async function BlogsTableContent({
   status?: string;
   search?: string;
 }) {
-  const { data: blogs, pagination } = await getBlogs({
+
+  const response = await getBlogs({
     page,
     limit,
     sort,
@@ -25,6 +26,11 @@ async function BlogsTableContent({
     search
   });
   
+  if (!response.data) {
+    throw new Error('Failed to fetch blogs data');
+  }
+
+  const { blogs, pagination } = response.data;  
   return (
     <DataTable 
       columns={columns} 

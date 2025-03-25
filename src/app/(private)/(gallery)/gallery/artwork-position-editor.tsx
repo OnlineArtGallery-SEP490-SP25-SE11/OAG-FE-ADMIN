@@ -25,7 +25,7 @@ type WallConfigs = {
   right: WallSettings;
 };
 
-type Artwork = {
+type ArtworkPlacement = {
   position: [number, number, number];
   rotation: [number, number, number];
 };
@@ -42,17 +42,17 @@ export default function ArtworkEditor() {
   });
 
   // Track custom artworks separately - Khởi tạo từ templateData.artworks
-  const [customArtworks, setCustomArtworks] = useState<Artwork[]>(() => {
+  const [customArtworkPlacements, setCustomArtworkPlacements] = useState<ArtworkPlacement[]>(() => {
     // Sử dụng dữ liệu có sẵn từ template
-    return [...(templateData.artworks || [])];
+    return [...(templateData.artworkPlacements || [])];
   });
 
   // Effect để chạy một lần khi component mount, xóa bỏ các artwork từ wall configs
   useEffect(() => {
     // Chỉ chạy khi khởi tạo component
-    if (customArtworks.length > 0) {
+    if (customArtworkPlacements.length > 0) {
       // Đảm bảo các artwork hiện tại được giữ lại
-      updateTemplate({ artworks: customArtworks });
+      updateTemplate({ artworkPlacements: customArtworkPlacements });
     }
   }, []);
   
@@ -77,7 +77,7 @@ export default function ArtworkEditor() {
   
   // Generate all artwork positions based on wall configurations and custom artworks
   const regenerateArtworkPositions = () => {
-    const generatedArtworks: Artwork[] = [];
+    const generatedArtworkPlacements: ArtworkPlacement[] = [];
     
     // Generate positions for each standard wall
     Object.entries(wallConfigs).forEach(([wallType, config]) => {
@@ -95,7 +95,7 @@ export default function ArtworkEditor() {
         
         // Add all positions to the generated array
         for (let i = 0; i < result.positions.length; i++) {
-          generatedArtworks.push({
+          generatedArtworkPlacements.push({
             position: result.positions[i],
             rotation: result.rotations[i]
           });
@@ -104,69 +104,69 @@ export default function ArtworkEditor() {
     });
     
     // Combine with custom artworks
-    const allArtworks = [...generatedArtworks, ...customArtworks];
+    const allArtworkPlacements = [...generatedArtworkPlacements, ...customArtworkPlacements];
     
-    // Update the template with all artworks
-    updateTemplate({ artworks: allArtworks });
+    // Update the template with all artwork placements
+    updateTemplate({ artworkPlacements: allArtworkPlacements });
   };
   
   // Add new custom artwork
   const addCustomArtwork = () => {
-    const newArtwork = {
+    const newArtworkPlacement = {
       position: [0, templateData.wallHeight / 2, 0] as [number, number, number],
       rotation: [0, 0, 0] as [number, number, number]
     };
     
-    const updatedCustomArtworks = [...customArtworks, newArtwork];
-    setCustomArtworks(updatedCustomArtworks);
+    const updatedCustomArtworkPlacements = [...customArtworkPlacements, newArtworkPlacement];
+    setCustomArtworkPlacements(updatedCustomArtworkPlacements);
     
     // Cập nhật template với tất cả artworks
     updateTemplate({
-      artworks: [...(templateData.artworks || []), newArtwork]
+      artworkPlacements: [...(templateData.artworkPlacements || []), newArtworkPlacement]
     });
   };
   
   // Remove custom artwork
   const removeCustomArtwork = (index: number) => {
-    const updatedCustomArtworks = customArtworks.filter((_, i) => i !== index);
-    setCustomArtworks(updatedCustomArtworks);
+    const updatedCustomArtworkPlacements = customArtworkPlacements.filter((_, i) => i !== index);
+    setCustomArtworkPlacements(updatedCustomArtworkPlacements);
     
     // Cập nhật template với custom artworks mới
     updateTemplate({ 
-      artworks: updatedCustomArtworks 
+      artworkPlacements: updatedCustomArtworkPlacements 
     });
   };
   
   // Update custom artwork position
   const updateCustomPosition = (index: number, axis: 0 | 1 | 2, value: number) => {
-    const updatedCustomArtworks = [...customArtworks];
-    const newPosition = [...updatedCustomArtworks[index].position] as [number, number, number];
+    const updatedCustomArtworkPlacements = [...customArtworkPlacements];
+    const newPosition = [...updatedCustomArtworkPlacements[index].position] as [number, number, number];
     newPosition[axis] = value;
-    updatedCustomArtworks[index] = {
-      ...updatedCustomArtworks[index],
+    updatedCustomArtworkPlacements[index] = {
+      ...updatedCustomArtworkPlacements[index],
       position: newPosition
     };
     
-    setCustomArtworks(updatedCustomArtworks);
+    setCustomArtworkPlacements(updatedCustomArtworkPlacements);
     
     // Cập nhật template với custom artworks mới
-    updateTemplate({ artworks: updatedCustomArtworks });
+    updateTemplate({ artworkPlacements: updatedCustomArtworkPlacements });
   };
   
   // Update custom artwork rotation
   const updateCustomRotation = (index: number, axis: 0 | 1 | 2, value: number) => {
-    const updatedCustomArtworks = [...customArtworks];
-    const newRotation = [...updatedCustomArtworks[index].rotation] as [number, number, number];
+    const updatedCustomArtworkPlacements = [...customArtworkPlacements];
+    const newRotation = [...updatedCustomArtworkPlacements[index].rotation] as [number, number, number];
     newRotation[axis] = value;
-    updatedCustomArtworks[index] = {
-      ...updatedCustomArtworks[index],
+    updatedCustomArtworkPlacements[index] = {
+      ...updatedCustomArtworkPlacements[index],
       rotation: newRotation
     };
     
-    setCustomArtworks(updatedCustomArtworks);
+    setCustomArtworkPlacements(updatedCustomArtworkPlacements);
     
     // Cập nhật template với custom artworks mới
-    updateTemplate({ artworks: updatedCustomArtworks });
+    updateTemplate({ artworkPlacements: updatedCustomArtworkPlacements });
   };
   
   // Render a wall configuration section
@@ -234,11 +234,11 @@ export default function ArtworkEditor() {
               </Button>
             </div>
             
-            {customArtworks.length === 0 ? (
+            {customArtworkPlacements.length === 0 ? (
               <p className="text-sm text-gray-500 italic">No custom artworks added yet.</p>
             ) : (
               <div className="space-y-4">
-                {customArtworks.map((artwork, index) => (
+                {customArtworkPlacements.map((artwork, index) => (
                   <Card key={`custom-artwork-${index}`}>
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-center">
@@ -310,7 +310,7 @@ export default function ArtworkEditor() {
       
       <div className="p-4 border-t border-gray-200">
         <h4 className="text-sm font-medium text-gray-600 mb-2">
-          Total Artwork Count: {customArtworks.length}
+          Total Artwork Count: {customArtworkPlacements.length}
         </h4>
       </div>
     </div>

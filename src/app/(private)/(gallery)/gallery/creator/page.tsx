@@ -10,7 +10,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { type GalleryTemplateData } from '../gallery-template-creator';
-import { saveGalleryTemplateAction } from '../actions';
+import { createGalleryTemplateAction } from '../actions';
 import { useServerAction } from 'zsa-react';
 import { z } from 'zod';
 
@@ -31,8 +31,10 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]).optional(),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
+  planImage: z.string().min(1, "Plane image is required"),
+  isPrenium: z.boolean().default(false),
   customColliders: z.array(z.any()).optional(),
-  artworks: z.array(
+  artworkPlacements: z.array(
     z.object({
       position: z.tuple([z.number(), z.number(), z.number()]),
       rotation: z.tuple([z.number(), z.number(), z.number()])
@@ -40,15 +42,16 @@ const galleryTemplateSchema = z.object({
   ).default([]),
 });
 
-export default function GalleryCreatorPage({ params }: { params: { locale: string } }) {
+export default function GalleryCreatorPage() {
   const router = useRouter();
   const [activeView, setActiveView] = useState<'edit' | 'preview'>('edit');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [savedTemplate, setSavedTemplate] = useState<GalleryTemplateData | null>(null);
   const [editedTemplate, setEditedTemplate] = useState<GalleryTemplateData | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const { execute, isPending } = useServerAction(saveGalleryTemplateAction, {
+  const { execute, isPending } = useServerAction(createGalleryTemplateAction, {
     onError: (err) => {
       toast({
         title: 'Error',
@@ -56,13 +59,7 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
         variant: 'destructive'
       });
     },
-    onSuccess: (result) => {
-      const templateData = result.data;
-      setSavedTemplate(templateData);
-      setEditedTemplate(templateData);
-      setValidationErrors({});
-      console.log('Saved template:', templateData);
-      
+    onSuccess: () => {
       toast({
         title: 'Gallery template saved',
         description: 'Your gallery template has been saved successfully.',
@@ -70,8 +67,8 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
       });
 
       setTimeout(() => {
-        router.push(`/${params.locale}/exhibitions/templates`);
-      }, 1500);
+        router.push(`/gallery`);
+      }, 1000);
     }
   });
   
@@ -117,7 +114,7 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
       return;
     }
     
-    console.log('Saving gallery template:', finalTemplateData);
+    console.log('Saving gallery template1:', finalTemplateData);
     await execute(finalTemplateData);
   };
 
@@ -169,10 +166,10 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
   }, []);
   
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       {/* Header bar with navigation and actions */}
       <div className="border-b bg-white sticky top-0 z-10">
-        <div className=" flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />
@@ -180,10 +177,10 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
             <h1 className="text-xl font-semibold">Create Gallery Template</h1>
           </div>
           
-          <div className="">
+          <div>
             <Button 
               variant="outline" 
-              onClick={() => router.push(`/${params.locale}/exhibitions/gallery`)}
+              onClick={() => router.push(`/exhibitions/gallery`)}
             >
               Cancel
             </Button>
@@ -192,10 +189,11 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
       </div>
       
       {/* Main content with Tabs */}
-      <div className="flex-grow">
+      <div className="flex-1 overflow-hidden">
         <Tabs 
           value={activeView} 
           onValueChange={handleViewChange}
+          className="h-full flex flex-col"
         >
           <div className="container mt-4">
             <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -204,37 +202,39 @@ export default function GalleryCreatorPage({ params }: { params: { locale: strin
             </TabsList>
           </div>
 
-          <Suspense fallback={<div className="h-[calc(100vh-8rem)] flex items-center justify-center"><Loader /></div>}>
-            <TabsContent value="edit" className="mt-0">
-              <div className="py-6">
-                <GalleryTemplateCreator 
-                  onSave={handleSaveTemplate}
-                  onUpdate={handleTemplateUpdate} 
-                  initialData={savedTemplate || undefined}
-                  isSaving={isPending}
-                  validationErrors={validationErrors}
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="preview" className="mt-0">
-              <div className="h-[calc(100vh-8rem)] bg-gray-900">
-                {editedTemplate ? (
-                  <PreviewMode 
-                    templateData={editedTemplate} 
-                    isActive={activeView === 'preview' && !isTransitioning}
+          <div className="flex-1 overflow-hidden">
+            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+              <TabsContent value="edit" className="mt-0 h-full">
+                <div className="h-full py-6">
+                  <GalleryTemplateCreator 
+                    onSave={handleSaveTemplate}
+                    onUpdate={handleTemplateUpdate} 
+                    initialData={savedTemplate || undefined}
+                    isSaving={isPending}
+                    validationErrors={validationErrors}
                   />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-white">
-                    <div className="text-center">
-                      <p className="text-lg">No template data available for preview</p>
-                      <p className="text-sm text-gray-400 mt-2">Create your gallery in the editor first</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="preview" className="mt-0 h-full">
+                <div className="h-full bg-gray-900">
+                  {editedTemplate ? (
+                    <PreviewMode 
+                      templateData={editedTemplate} 
+                      isActive={activeView === 'preview' && !isTransitioning}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white">
+                      <div className="text-center">
+                        <p className="text-lg">No template data available for preview</p>
+                        <p className="text-sm text-gray-400 mt-2">Create your gallery in the editor first</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Suspense>
+                  )}
+                </div>
+              </TabsContent>
+            </Suspense>
+          </div>
         </Tabs>
       </div>
     </div>
