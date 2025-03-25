@@ -1,6 +1,5 @@
 import { Breadcrumb } from "@/components/ui.custom/breadcrumb";
-import { DataTable } from "@/app/(private)/(sidebar)/blogs/data-table";
-import { Customer, columns } from "./columns";
+import { Customer } from "./columns";
 
 export default function ManagementPage() {
   // Mock data - replace with actual API call

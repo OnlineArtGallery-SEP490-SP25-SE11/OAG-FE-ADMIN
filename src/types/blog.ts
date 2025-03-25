@@ -54,3 +54,11 @@ export type GetBlogsResponse = {
 export type BlogRequestResponse = {
 	blog: Blog;
 };
+
+export type BlogTag = {
+  _id: string;
+  name: string;
+}
+export type BlogTagResponse = {
+  tags : BlogTag[];
+}
