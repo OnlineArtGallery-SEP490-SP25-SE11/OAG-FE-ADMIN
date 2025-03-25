@@ -51,7 +51,9 @@ export function DeleteGalleryDialog({
   });
 
   const handleDelete = async () => {
-    // await deleteTemplate(galleryId);
+    await deleteTemplate({
+      id: galleryId,
+    });
   };
 
   return (

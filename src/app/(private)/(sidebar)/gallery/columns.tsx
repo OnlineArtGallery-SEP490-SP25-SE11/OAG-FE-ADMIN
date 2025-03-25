@@ -2,95 +2,105 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Pencil, Eye, Trash2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { Gallery } from "@/types/gallery";
+import { GalleryActions } from "./gallery-actions";
 
 export const columns: ColumnDef<Gallery>[] = [
   {
     accessorKey: "preview",
-    header: "Preview",
+    header: () => <div className="text-center w-[100px]">Preview</div>,
     cell: ({ row }) => {
       const template = row.original;
       return (
-        <div className="h-16 w-16 relative rounded-md overflow-hidden">
-          {template.previewImage ? (
-            <Image
-              src={template.previewImage}
-              alt={template.name}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground text-xs">No preview</p>
-            </div>
-          )}
+        <div className="flex justify-center items-center h-[60px] w-[100px]">
+          <div className="relative h-[50px] w-[50px] rounded-md overflow-hidden border border-gray-200 dark:border-gray-700">
+            {template.previewImage ? (
+              <Image
+                src={template.previewImage}
+                alt={template.name}
+                fill
+                sizes="50px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <p className="text-muted-foreground text-xs">No preview</p>
+              </div>
+            )}
+          </div>
         </div>
       );
     },
+    size: 100,
   },
   {
     accessorKey: "name",
-    header: "Name",
+    header: () => <div className="text-left w-[180px]">Name</div>,
     cell: ({ row }) => {
       const template = row.original;
       return (
-        <div>
-          <p className="font-medium">{template.name}</p>
-          <p className="text-sm text-muted-foreground">{template.description}</p>
+        <div className="text-left h-[60px] flex items-center w-[180px]">
+          <p className="font-medium truncate" title={template.name}>
+            {template.name}
+          </p>
         </div>
       );
     },
+    size: 180,
+  },
+  {
+    accessorKey: "description",
+    header: () => <div className="text-left w-[250px]">Description</div>,
+    cell: ({ row }) => {
+      const template = row.original;
+      return (
+        <div className="h-[60px] flex items-center w-[250px]">
+          <p className="text-sm text-muted-foreground line-clamp-2 text-left" title={template.description}>
+            {template.description}
+          </p>
+        </div>
+      );
+    },
+    size: 250,
   },
   {
     accessorKey: "dimensions",
-    header: "Dimensions",
+    header: () => <div className="text-center w-[120px]">Dimensions</div>,
     cell: ({ row }) => {
       const template = row.original;
       return (
-        <Badge variant="secondary">
-          {template.dimensions.xAxis}x{template.dimensions.zAxis}m
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "wallHeight",
-    header: "Wall Height",
-    cell: ({ row }) => {
-      return <span>{row.original.wallHeight}m</span>;
-    },
-  },
-  {
-    accessorKey: "modelPath",
-    header: "Model",
-    cell: ({ row }) => {
-      return <span>{row.original.modelPath.split('/').pop()}</span>;
-    },
-  },
-  {
-    id: "actions",
-    header: () => <div className="text-right">Actions</div>,
-    cell: ({ row }) => {
-      const template = row.original;
-      return (
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/gallery/edit/${template._id}`}>
-              <Pencil className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="sm">
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-            <Trash2 className="h-4 w-4" />
-          </Button>
+        <div className="text-center h-[60px] flex items-center justify-center w-[120px]">
+          <Badge variant="secondary">
+            {template.dimensions.xAxis}x{template.dimensions.zAxis}m
+          </Badge>
         </div>
       );
     },
+    size: 120,
+  },
+  {
+    accessorKey: "wallHeight",
+    header: () => <div className="text-center w-[100px]">Height</div>,
+    cell: ({ row }) => {
+      return (
+        <div className="text-center h-[60px] flex items-center justify-center w-[100px]">
+          {row.original.wallHeight}m
+        </div>
+      );
+    },
+    size: 100,
+  },
+  {
+    id: "actions",
+    header: () => <div className="text-center w-[100px]">Actions</div>,
+    cell: ({ row }) => {
+      return (
+        <div className="flex justify-center items-center gap-2 h-[60px] w-[100px]">
+          <GalleryActions gallery={row.original} />
+        </div>
+      );
+    },
+    size: 100,
   },
 ];

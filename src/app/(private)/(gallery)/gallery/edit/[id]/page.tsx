@@ -18,7 +18,7 @@ export default async function EditGalleryTemplatePage({
   } 
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+      <div className="flex items-center justify-center h-screen">
         <Loader />
       </div>
     }>

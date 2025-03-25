@@ -166,10 +166,10 @@ export default function GalleryCreatorPage() {
   }, []);
   
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       {/* Header bar with navigation and actions */}
       <div className="border-b bg-white sticky top-0 z-10">
-        <div className=" flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />
@@ -177,7 +177,7 @@ export default function GalleryCreatorPage() {
             <h1 className="text-xl font-semibold">Create Gallery Template</h1>
           </div>
           
-          <div className="">
+          <div>
             <Button 
               variant="outline" 
               onClick={() => router.push(`/exhibitions/gallery`)}
@@ -189,10 +189,11 @@ export default function GalleryCreatorPage() {
       </div>
       
       {/* Main content with Tabs */}
-      <div className="flex-grow">
+      <div className="flex-1 overflow-hidden">
         <Tabs 
           value={activeView} 
           onValueChange={handleViewChange}
+          className="h-full flex flex-col"
         >
           <div className="container mt-4">
             <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -201,37 +202,39 @@ export default function GalleryCreatorPage() {
             </TabsList>
           </div>
 
-          <Suspense fallback={<div className="h-[calc(100vh-8rem)] flex items-center justify-center"><Loader /></div>}>
-            <TabsContent value="edit" className="mt-0">
-              <div className="py-6">
-                <GalleryTemplateCreator 
-                  onSave={handleSaveTemplate}
-                  onUpdate={handleTemplateUpdate} 
-                  initialData={savedTemplate || undefined}
-                  isSaving={isPending}
-                  validationErrors={validationErrors}
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="preview" className="mt-0">
-              <div className="h-[calc(100vh-8rem)] bg-gray-900">
-                {editedTemplate ? (
-                  <PreviewMode 
-                    templateData={editedTemplate} 
-                    isActive={activeView === 'preview' && !isTransitioning}
+          <div className="flex-1 overflow-hidden">
+            <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
+              <TabsContent value="edit" className="mt-0 h-full">
+                <div className="h-full py-6">
+                  <GalleryTemplateCreator 
+                    onSave={handleSaveTemplate}
+                    onUpdate={handleTemplateUpdate} 
+                    initialData={savedTemplate || undefined}
+                    isSaving={isPending}
+                    validationErrors={validationErrors}
                   />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-white">
-                    <div className="text-center">
-                      <p className="text-lg">No template data available for preview</p>
-                      <p className="text-sm text-gray-400 mt-2">Create your gallery in the editor first</p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="preview" className="mt-0 h-full">
+                <div className="h-full bg-gray-900">
+                  {editedTemplate ? (
+                    <PreviewMode 
+                      templateData={editedTemplate} 
+                      isActive={activeView === 'preview' && !isTransitioning}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-white">
+                      <div className="text-center">
+                        <p className="text-lg">No template data available for preview</p>
+                        <p className="text-sm text-gray-400 mt-2">Create your gallery in the editor first</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Suspense>
+                  )}
+                </div>
+              </TabsContent>
+            </Suspense>
+          </div>
         </Tabs>
       </div>
     </div>

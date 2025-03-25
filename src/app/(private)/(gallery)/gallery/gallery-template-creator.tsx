@@ -235,9 +235,9 @@ export default function GalleryTemplateCreator({
       addCollider, updateCollider, removeCollider,
       isLoading
     }}>
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex h-full">
         {/* 3D Preview Panel */}
-        <div className="w-2/3 h-full relative bg-gray-900">
+        <div className="w-2/3 relative bg-gray-900">
           <Canvas shadows>
             <PerspectiveCamera makeDefault position={[0, 5, 10]} fov={75} />
             <ambientLight intensity={0.5} />
@@ -261,7 +261,7 @@ export default function GalleryTemplateCreator({
         </div>
 
         {/* Control Panel */}
-        <div className="w-1/3 h-full bg-white p-4 overflow-y-auto">
+        <div className="w-1/3 bg-white p-4 overflow-y-auto">
           <div className="mb-4">
             <h2 className="text-2xl font-bold">Gallery Template Creator</h2>
             <p className="text-gray-600">Design your custom gallery template</p>

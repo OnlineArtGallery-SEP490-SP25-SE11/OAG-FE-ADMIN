@@ -2,7 +2,7 @@ import { columns } from "./columns";
 import { DataTable } from "@/components/ui.custom/data-table";
 import { getGalleryTemplates } from "@/service/gallery-service";
 import { Suspense } from "react";
-import { TableSkeleton } from "./table-skeleton";
+import { TableSkeleton } from "../../../../components/ui.custom/table-skeleton";
 
 async function GalleryTableContent({
   page,

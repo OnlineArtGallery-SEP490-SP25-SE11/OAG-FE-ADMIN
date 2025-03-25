@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { GalleryTable } from './gallery-table';
 import CreateGalleryButton from './create-gallery-button';
 import { ErrorBoundary } from 'react-error-boundary';
-import { TableSkeleton } from './table-skeleton';
+import { TableSkeleton } from '@/components/ui.custom/table-skeleton';
 
 export const metadata: Metadata = {
   title: 'Gallery Templates',

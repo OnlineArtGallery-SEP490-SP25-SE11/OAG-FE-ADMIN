@@ -1,14 +1,16 @@
 'use server';
 
-import { deleteGalleryTemplate } from '@/service/gallery-service';
 import { adminOnlyAction } from '@/lib/safe-action';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import { deleteGalleryTemplate } from '@/service/gallery-service';
 
 export const deleteGalleryTemplateAction = adminOnlyAction
   .createServerAction()
-  .input(z.string())
-  .handler(async ({ input: id, ctx }) => {
+  .input(z.object({
+    id: z.string()
+  }))
+  .handler(async ({ input: { id }, ctx }) => {
     try {
       await deleteGalleryTemplate(ctx.user.accessToken, id);
       revalidatePath('/gallery');
