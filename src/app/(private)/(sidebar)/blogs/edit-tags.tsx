@@ -19,12 +19,10 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tag } from 'lucide-react';
 import { getTags } from '@/service/blog-tag-service';
+import { BlogTag } from '@/types/blog';
 
 // Define proper types
-interface BlogTag {
-  _id: string;
-  name: string;
-}
+
 
 interface EditTagsProps {
   blogId: string;
@@ -72,8 +70,9 @@ export default function EditTags({ blogId, currentTags = [] }: EditTagsProps) {
     const fetchTags = async () => {
       try {
         setIsLoading(true);
-        const tags = await getTags();
-        setAvailableTags(tags || []);
+        const res = await getTags();
+        console.log('Fetched tags:', res);
+        setAvailableTags(res.data?.tags || []);
       } catch {
         toast({
           title: 'Error',

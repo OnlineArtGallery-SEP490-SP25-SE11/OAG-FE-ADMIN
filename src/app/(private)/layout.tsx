@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/session";
-import { notFound } from "next/navigation";
+import {  redirect } from "next/navigation";
 
 export default async function PrivateLayout({
     children,
@@ -7,8 +7,8 @@ export default async function PrivateLayout({
     children: React.ReactNode;
 }>) {
     const user = await getCurrentUser();
-    if (!user) {
-        return notFound();
+    if (!user || !user.role.includes("admin")) {
+        return redirect('/auth');
     }
     return (
         <>

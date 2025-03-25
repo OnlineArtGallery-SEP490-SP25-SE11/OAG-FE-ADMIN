@@ -2,8 +2,8 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { saveGalleryTemplate } from '@/service/gallery-service';
-import { authenticatedAction } from '@/lib/safe-action';
+import { createGalleryTemplate, saveGalleryTemplate } from '@/service/gallery-service';
+import { adminOnlyAction, authenticatedAction } from '@/lib/safe-action';
 
 // Define validation schema for gallery template data
 const galleryTemplateSchema = z.object({
@@ -22,42 +22,56 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]),
   previewImage: z.string().min(1, "Preview image is required"),
-  customColliders: z.array(z.any()).optional()
+  planImage: z.string().min(1, "Plane image is required"),
+  isPremium: z.boolean().default(false),
+  customColliders: z.array(z.any()).optional(),
+  artworkPlacements: z.array(
+    z.object({
+      position: z.tuple([z.number(), z.number(), z.number()]),
+      rotation: z.tuple([z.number(), z.number(), z.number()])
+    })
+  ).default([]),
 });
+
+export const createGalleryTemplateAction = adminOnlyAction
+  .createServerAction()
+  .input(galleryTemplateSchema)
+  .handler(async ({ input, ctx }) => {
+    const { user } = ctx;
+    const templateData = { ...input,
+      customColliders: input.customColliders || [],
+      artworkPlacements: input.artworkPlacements || [],
+     };
+
+     console.log('Saving gallery template2:', templateData);
+
+    
+    const res = await createGalleryTemplate(user.accessToken, templateData);
+    return res.data;
+  });
 
 export const saveGalleryTemplateAction = authenticatedAction
   .createServerAction()
   .input(galleryTemplateSchema)
   .handler(async ({ input, ctx }) => {
-    const { user } = ctx;
-    console.log('User:', user);
-
     try {
-      // Process the input data
-      console.log('Saving gallery template:', input);
 
-      // Clone the input data to avoid mutation
       const templateData = { ...input };
 
       const savedData = {
         ...templateData,
-        id: templateData.id || `template_${Date.now()}`,
         customColliders: templateData.customColliders || [],
-        artworks: [],
+        artworkPlacements: templateData.artworkPlacements || [],
       };
-
-      // Save the template
-      const finalTemplateData = await saveGalleryTemplate(savedData);
-
-      // Revalidate related paths
+      const res = await saveGalleryTemplate(ctx.user.accessToken, savedData);
+      const { gallery } = res.data!;
       revalidatePath(`/gallery`);
-      if (finalTemplateData.id) {
-        revalidatePath(`/gallery/edit/${finalTemplateData.id}`);
+      if (gallery) {
+        revalidatePath(`/gallery/edit/${gallery._id}`);
+        return gallery;
       }
-
-      return finalTemplateData;
     } catch (error) {
       console.error('Error saving gallery template:', error);
       throw new Error('Failed to save gallery template');
     }
-});
+  });

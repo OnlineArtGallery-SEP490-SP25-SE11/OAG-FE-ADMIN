@@ -1,4 +1,4 @@
-import { TableSkeleton } from "./blog-table";
+import { TableSkeleton } from "@/components/ui.custom/table-skeleton";
 
 export default function Loading() {
   return (

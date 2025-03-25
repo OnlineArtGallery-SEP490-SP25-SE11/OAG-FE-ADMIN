@@ -86,13 +86,13 @@ export default function GalleryPreview({ showColliders }: { showColliders: boole
   // Update to use the new artworks array (replace the artworkPositions calculation)
 
   // Remove the existing useMemo block for calculating artworkPositions and add this simpler version:
-  const artworks = useMemo(() => {
-    return templateData.artworks || [];
-  }, [templateData.artworks]);
+  const artworkPlacements = useMemo(() => {
+    return templateData.artworkPlacements || [];
+  }, [templateData.artworkPlacements]);
 
   // Replace the renderArtworkPositions function
   const renderArtworkPositions = () => {
-    return artworks.map((artwork, index) => (
+    return artworkPlacements.map((artwork, index) => (
       <mesh
         key={`artwork-pos-${index}`}
         position={artwork.position}
