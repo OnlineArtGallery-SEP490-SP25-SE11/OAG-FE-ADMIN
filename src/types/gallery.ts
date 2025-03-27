@@ -64,8 +64,6 @@ export interface DoorWallProps {
 export interface BaseColliderConfig {
 	position: Vec3;
 	rotation: Vec3;
-	type?: 'Static' | 'Dynamic' | 'Kinematic';
-	visible?: boolean;
 }
 
 export interface BoxColliderConfig extends BaseColliderConfig {
