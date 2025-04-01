@@ -64,6 +64,7 @@ export interface DoorWallProps {
 export interface BaseColliderConfig {
 	position: Vec3;
 	rotation: Vec3;
+	visible?: boolean;
 }
 
 export interface BoxColliderConfig extends BaseColliderConfig {
