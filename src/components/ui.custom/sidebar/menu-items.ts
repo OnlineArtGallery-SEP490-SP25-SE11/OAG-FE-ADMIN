@@ -7,7 +7,8 @@ import {
 	Newspaper,
 	Settings,
 	UserCog,
-	Users
+	Users,
+	ImagePlus,
 } from 'lucide-react';
 const menuItems = [
 	{ href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -44,9 +45,11 @@ const menuItems = [
 		]
 	 },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
+	{ href: '/artwork', label: 'Artwork', icon: ImagePlus },
 	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
 	{ href: '/gallery', label: 'Gallery', icon: Cylinder },
 	{ href: '/settings', label: 'Settings', icon: Settings },
+	
 	
 ];
 
