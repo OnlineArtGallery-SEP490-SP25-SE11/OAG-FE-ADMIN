@@ -180,6 +180,7 @@ export interface Gallery {
 }
 
 export type ColliderConfig = BoxColliderConfig | CurvedColliderConfig;
+
 export type GetGalleriesResponse = {
 	galleries: Gallery[];
 	pagination: {
