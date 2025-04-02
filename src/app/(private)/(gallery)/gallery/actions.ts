@@ -5,6 +5,35 @@ import { revalidatePath } from 'next/cache';
 import { createGalleryTemplate, saveGalleryTemplate } from '@/service/gallery-service';
 import { adminOnlyAction, authenticatedAction } from '@/lib/safe-action';
 
+const vector3Schema = z.tuple([z.number(), z.number(), z.number()]);
+
+// Base collider schema
+const baseColliderSchema = z.object({
+  position: vector3Schema,
+  rotation: vector3Schema,
+});
+
+// Box collider specific schema
+const boxColliderSchema = baseColliderSchema.extend({
+  shape: z.literal('box'),
+  args: vector3Schema
+});
+
+// Curved collider specific schema
+const curvedColliderSchema = baseColliderSchema.extend({
+  shape: z.literal('curved'),
+  radius: z.number().positive(),
+  height: z.number().positive(),
+  segments: z.number().int().positive().optional().default(32),
+  arc: z.number().min(0).max(Math.PI * 2).optional().default(Math.PI * 2)
+});
+
+// Combined collider schema using discriminated union
+const customColliderSchema = z.discriminatedUnion('shape', [
+  boxColliderSchema,
+  curvedColliderSchema
+]);
+
 // Define validation schema for gallery template data
 const galleryTemplateSchema = z.object({
   id: z.string().optional(),
@@ -24,7 +53,7 @@ const galleryTemplateSchema = z.object({
   previewImage: z.string().min(1, "Preview image is required"),
   planImage: z.string().min(1, "Plane image is required"),
   isPremium: z.boolean().default(false),
-  customColliders: z.array(z.any()).optional(),
+  customColliders: z.array(customColliderSchema).optional(),
   artworkPlacements: z.array(
     z.object({
       position: z.tuple([z.number(), z.number(), z.number()]),
