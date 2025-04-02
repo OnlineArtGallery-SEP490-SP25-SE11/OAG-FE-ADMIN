@@ -1,5 +1,4 @@
 import { createAxiosInstance } from "@/lib/axios";
-
 // API service using axios
 const artworkService = {
   getArtworks: async ({
@@ -26,14 +25,15 @@ const artworkService = {
     if (status && status !== "all") {
       params.append("moderationStatus", status);
     }
-    if (sortBy) {
-      params.append("sortBy", sortBy);
-    }
-    if (sortOrder) {
-      params.append("sortOrder", sortOrder);
-    }
+    // if (sortBy) {
+    //   params.append("sortBy", sortBy);
+    // }
+    // if (sortOrder) {
+    //   params.append("sortOrder", sortOrder);
+    // }
 
     const response = await axios.get(`/artwork/admin?${params.toString()}`);
+    console.log("Response data:", response.data);
     return response.data;
   },
   reviewArtwork: async ({

@@ -13,3 +13,23 @@ export enum EventStatus {
   UPCOMING = 'UPCOMING',
   COMPLETED = 'COMPLETED',
 }
+
+export enum Role {
+  USER = "user",
+  ARTIST = "artist",
+  ADMIN = "admin"
+}
+
+export enum ReasonReport {
+	INAPPROPRIATE = 'INAPPROPRIATE',
+	COPYRIGHT = 'COPYRIGHT',
+	HARASSMENT = 'HARASSMENT',
+	SPAM = 'SPAM',
+	Other = 'Other',
+}
+
+export enum ReportStatus {
+	PENDING = 'PENDING',
+	DISMISSED = 'DISMISSED',
+	RESOLVED = 'RESOLVED',
+}
