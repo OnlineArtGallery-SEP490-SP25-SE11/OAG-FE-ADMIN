@@ -1,12 +1,4 @@
 import { Artwork } from '@/types/artwork';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,10 +23,114 @@ import {
 	Palette,
 	Tag,
 	User,
-	XCircle
+	X
 } from 'lucide-react';
 import { formatShortDate, formatFullDate } from '@/utils/date';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+
+type CustomDialogProps = {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	children: React.ReactNode;
+	className?: string;
+	maxWidth?: string;
+};
+
+function CustomDialog({ open, onOpenChange, children, className = '', maxWidth = 'max-w-md' }: CustomDialogProps) {
+	const [mounted, setMounted] = useState(false);
+	const [isVisible, setIsVisible] = useState(false);
+	const overlayRef = useRef<HTMLDivElement>(null);
+	const dialogRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (mounted) {
+			if (open) {
+				// Small delay to ensure transitions work properly
+				setTimeout(() => setIsVisible(true), 10);
+				document.body.style.overflow = 'hidden';
+				
+				// Focus trap
+				const handleKeyDown = (e: KeyboardEvent) => {
+					if (e.key === 'Escape') {
+						onOpenChange(false);
+					}
+				};
+				
+				window.addEventListener('keydown', handleKeyDown);
+				return () => {
+					window.removeEventListener('keydown', handleKeyDown);
+				};
+			} else {
+				setIsVisible(false);
+				// Allow time for animation to complete before removing from DOM
+				setTimeout(() => {
+					if (!open) document.body.style.overflow = '';
+				}, 200);
+			}
+		}
+	}, [open, mounted, onOpenChange]);
+	
+	useEffect(() => {
+		const handleOutsideClick = (e: MouseEvent) => {
+			if (overlayRef.current === e.target) {
+				onOpenChange(false);
+			}
+		};
+		
+		if (open) {
+			document.addEventListener('mousedown', handleOutsideClick);
+		}
+		
+		return () => {
+			document.removeEventListener('mousedown', handleOutsideClick);
+		};
+	}, [open, onOpenChange]);
+
+	if (!mounted) return null;
+
+	return createPortal(
+		<div
+			className={`fixed inset-0 z-50 ${open ? 'block' : 'hidden'}`}
+			aria-modal="true"
+			role="dialog"
+		>
+			<div 
+				ref={overlayRef}
+				className={`fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+					isVisible ? 'opacity-100' : 'opacity-0'
+				}`}
+				aria-hidden="true"
+			/>
+			
+			<div className="fixed inset-0 overflow-y-auto">
+				<div className="flex min-h-full items-center justify-center p-4">
+					<div
+						ref={dialogRef}
+						className={`bg-white dark:bg-slate-950 rounded-lg shadow-xl ${maxWidth} w-full transition-all duration-300 ${
+							isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
+						} ${className}`}
+					>
+						{children}
+						
+						<button
+							onClick={() => onOpenChange(false)}
+							className="absolute top-3 right-3 rounded-full p-1 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+							aria-label="Close dialog"
+						>
+							<X className="h-4 w-4" />
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>,
+		document.body
+	);
+}
 
 type ArtworkDetailsDialogProps = {
 	open: boolean;
@@ -55,44 +151,39 @@ export function ArtworkDetailsDialog({
 	if (!artwork) return null;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
-				<DialogHeader>
-					<DialogTitle>
-						<span className='flex items-center'>
-							<FileText className='h-5 w-5 mr-2' />
-							{artwork.title}
+		<CustomDialog 
+			open={open} 
+			onOpenChange={onOpenChange}
+			maxWidth="max-w-4xl"
+			className="max-h-[90vh] overflow-y-auto"
+		>
+			<div className="p-6">
+				<div className="mb-4">
+					<h2 className="text-xl font-semibold flex items-center">
+						<FileText className='h-5 w-5 mr-2' />
+						{artwork.title}
+					</h2>
+					<div className='flex items-center gap-2 mt-1 text-sm text-gray-500'>
+						<User className='h-4 w-4' />
+						<span>Artist: {artwork.artistId?.name}</span>
+						<span className='mx-1'>•</span>
+						<Calendar className='h-4 w-4' />
+						<span>
+							{artwork.createdAt && (
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger className='cursor-help'>
+											{formatShortDate(artwork.createdAt)}
+										</TooltipTrigger>
+										<TooltipContent>
+											{formatFullDate(artwork.createdAt)}
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
 						</span>
-					</DialogTitle>
-					<DialogDescription>
-						<div className='flex items-center gap-2 mt-1'>
-							<User className='h-4 w-4' />
-							<span>Artist: {artwork.artistId?.name}</span>
-							<span className='mx-1 text-muted-foreground'>
-								•
-							</span>
-							<Calendar className='h-4 w-4' />
-							<span>
-								{artwork.createdAt && (
-									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger className='cursor-help'>
-												{formatShortDate(
-													artwork.createdAt
-												)}
-											</TooltipTrigger>
-											<TooltipContent>
-												{formatFullDate(
-													artwork.createdAt
-												)}
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								)}
-							</span>
-						</div>
-					</DialogDescription>
-				</DialogHeader>
+					</div>
+				</div>
 
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 pt-2'>
 					<div className='space-y-4'>
@@ -111,24 +202,17 @@ export function ArtworkDetailsDialog({
 							<div className='flex items-center justify-center p-3 rounded-md bg-muted border'>
 								<div className='flex flex-col items-center'>
 									<DollarSign className='h-5 w-5 text-green-500 mb-1' />
-									<span className='text-xs text-muted-foreground'>
-										Price
-									</span>
-									<span className='font-semibold'>
-										${artwork.price?.toFixed(2)}
-									</span>
+									<span className='text-xs text-muted-foreground'>Price</span>
+									<span className='font-semibold'>${artwork.price?.toFixed(2)}</span>
 								</div>
 							</div>
 
 							<div className='flex items-center justify-center p-3 rounded-md bg-muted border'>
 								<div className='flex flex-col items-center'>
 									<Maximize className='h-5 w-5 text-blue-500 mb-1' />
-									<span className='text-xs text-muted-foreground'>
-										Dimensions
-									</span>
+									<span className='text-xs text-muted-foreground'>Dimensions</span>
 									<span className='text-center text-sm'>
-										{artwork.dimensions?.width} ×{' '}
-										{artwork.dimensions?.height}
+										{artwork.dimensions?.width} × {artwork.dimensions?.height}
 									</span>
 								</div>
 							</div>
@@ -140,8 +224,7 @@ export function ArtworkDetailsDialog({
 							defaultValue='details'
 							className='w-full'
 							onValueChange={(value) => {
-								if (value === 'ai-review')
-									setShowAIReview(true);
+								if (value === 'ai-review') setShowAIReview(true);
 							}}
 						>
 							<TabsList className='grid w-full grid-cols-2'>
@@ -154,10 +237,9 @@ export function ArtworkDetailsDialog({
 									AI Review
 								</TabsTrigger>
 							</TabsList>
-							<TabsContent
-								value='details'
-								className='space-y-4 mt-4'
-							>
+							
+							{/* Details tab content */}
+							<TabsContent value='details' className='space-y-4 mt-4'>
 								<div>
 									<h3 className='font-medium mb-1 flex items-center'>
 										<FileText className='h-4 w-4 mr-1' />
@@ -208,21 +290,14 @@ export function ArtworkDetailsDialog({
 												{artwork.status}
 											</Badge>
 											<Badge
-												variant={
-													artwork.moderationStatus ===
-													'pending'
-														? 'outline'
-														: artwork.moderationStatus ===
-														  'approved'
+												variant={artwork.moderationStatus === 'pending'
+													? 'outline'
+													: artwork.moderationStatus === 'approved'
 														? 'secondary' // Changed from "success" to a standard variant
-														: 'destructive'
-												}
-												className={`w-fit mt-1 ${
-													artwork.moderationStatus ===
-													'approved'
-														? 'bg-green-100 text-green-800 hover:bg-green-200'
-														: ''
-												}`}
+														: 'destructive'}
+												className={`w-fit mt-1 ${artwork.moderationStatus === 'approved'
+													? 'bg-green-100 text-green-800 hover:bg-green-200'
+													: ''}`}
 											>
 												{artwork.moderationStatus}
 											</Badge>
@@ -280,10 +355,8 @@ export function ArtworkDetailsDialog({
 								)}
 							</TabsContent>
 
-							<TabsContent
-								value='ai-review'
-								className='space-y-4 mt-4'
-							>
+							{/* AI Review tab content */}
+							<TabsContent value='ai-review' className='space-y-4 mt-4'>
 								{artwork.aiReview ? (
 									<>
 										<div>
@@ -501,10 +574,7 @@ export function ArtworkDetailsDialog({
 						</Tabs>
 
 						<div className='flex justify-end gap-2 pt-4 border-t'>
-							<Button
-								variant='outline'
-								onClick={() => onOpenChange(false)}
-							>
+							<Button variant='outline' onClick={() => onOpenChange(false)}>
 								Close
 							</Button>
 							{artwork.moderationStatus !== 'approved' && (
@@ -516,8 +586,8 @@ export function ArtworkDetailsDialog({
 						</div>
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</div>
+		</CustomDialog>
 	);
 }
 
@@ -529,6 +599,7 @@ type ModerationDialogProps = {
 	setModerationReason: Dispatch<SetStateAction<string>>;
 	onApprove: () => void;
 	onReject: () => void;
+	onSuspend: () => void;
 	isPending: boolean;
 };
 
@@ -540,138 +611,140 @@ export function ModerationDialog({
 	setModerationReason,
 	onApprove,
 	onReject,
+	onSuspend,
 	isPending
 }: ModerationDialogProps) {
 	if (!artwork) return null;
 
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className='max-w-lg'>
-				<DialogHeader>
-					<DialogTitle>
-						<span className='flex items-center'>
-							<CheckCircle className='h-5 w-5 mr-2' />
-							Review Artwork
-						</span>
-					</DialogTitle>
-					<DialogDescription>
-						Approve or reject "{artwork.title}"
-					</DialogDescription>
-				</DialogHeader>
+	const isApproved = artwork.moderationStatus === "approved";
+	const isPendingStatus = artwork.moderationStatus === "pending";
+	const isSuspended = artwork.moderationStatus === "suspended";
+	const isRejected = artwork.moderationStatus === "rejected";
+	
+	// Check if a reason is needed and provided
+	const needsReason = artwork.moderationStatus === "rejected" || artwork.moderationStatus === "suspended";
+	const reasonProvided = moderationReason.trim().length > 0;
+	const isReasonInvalid = needsReason && !reasonProvided;
 
-				<div className='space-y-4 py-4'>
-					<div className='flex gap-4 items-start bg-muted/50 p-4 rounded-md border'>
-						<div className='relative h-24 w-24 rounded-md overflow-hidden flex-shrink-0 ring-1 ring-border'>
-							{artwork.url && (
-								<Image
-									src={artwork.url}
-									alt={artwork.title || 'Artwork preview'}
-									fill
-									className='object-cover'
-									sizes='96px'
-								/>
-							)}
+	return (
+		<CustomDialog 
+			open={open} 
+			onOpenChange={onOpenChange}
+			maxWidth="max-w-md"
+		>
+			<div className="p-6">
+				<div className="mb-6">
+					<h2 className="text-xl font-semibold">Moderate Artwork</h2>
+					<p className="text-sm text-gray-500 mt-1">
+						Review and update the moderation status of this artwork.
+					</p>
+				</div>
+				
+				<div className="space-y-4">
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<h4 className="font-medium mb-1">Title</h4>
+							<p className="text-sm text-muted-foreground">{artwork.title}</p>
 						</div>
 						<div>
-							<h3 className='font-medium'>{artwork.title}</h3>
-							<div className='text-sm text-muted-foreground flex items-center gap-1 mt-1'>
-								<User className='h-3 w-3' />
-								{artwork.artistId?.name}
-							</div>
-							<div className='flex gap-2 mt-2'>
-								{artwork.category?.slice(0, 2).map((cat, i) => (
-									<Badge
-										key={i}
-										variant='outline'
-										className='text-xs'
-									>
-										{cat}
-									</Badge>
-								))}
-								{artwork.category &&
-									artwork.category.length > 2 && (
-										<Badge
-											variant='outline'
-											className='text-xs'
-										>
-											+{artwork.category.length - 2}
-										</Badge>
-									)}
-							</div>
-
-							<div className='mt-2'>
-								<Badge
-									variant={
-										artwork.moderationStatus === 'pending'
-											? 'outline'
-											: artwork.moderationStatus ===
-											  'approved'
-											? 'secondary' // Changed from "success" to a standard variant
-											: 'destructive'
-									}
-								>
-									{artwork.moderationStatus}
-								</Badge>
-							</div>
+							<h4 className="font-medium mb-1">Artist</h4>
+							<p className="text-sm text-muted-foreground">
+								{artwork.artistId?.name || "Unknown"}
+							</p>
 						</div>
 					</div>
 
-					<div className='space-y-2'>
-						<Label
-							htmlFor='rejection-reason'
-							className='flex items-center'
-						>
-							<AlertTriangle className='h-4 w-4 mr-1 text-destructive' />
-							Rejection reason (required if rejecting)
+					<div>
+						<h4 className="font-medium mb-1">Current Status</h4>
+						<div className="mt-1">
+							{isPendingStatus ? (
+								<Badge variant="outline" className="bg-amber-50 text-amber-700">Pending</Badge>
+							) : isApproved ? (
+								<Badge variant="outline" className="bg-emerald-50 text-emerald-700">Approved</Badge>
+							) : isRejected ? (
+								<Badge variant="outline" className="bg-rose-50 text-rose-700">Rejected</Badge>
+							) : isSuspended ? (
+								<Badge variant="outline" className="bg-slate-50 text-slate-700">Suspended</Badge>
+							) : null}
+						</div>
+					</div>
+
+					 {/* Reason field for rejecting or suspending */}
+					<div>
+						<Label htmlFor="reason" className="mb-1 block">
+							{isRejected ? 'Rejection Reason' : isSuspended ? 'Suspension Reason' : isApproved ? 'Suspension Reason' : 'Reason for Rejection/Suspension'}
+							{(artwork.moderationStatus === "rejected" || artwork.moderationStatus === "suspended") && (
+								<span className="text-destructive ml-1">*</span>
+							)}
 						</Label>
 						<Textarea
-							id='rejection-reason'
-							placeholder='Explain why this artwork is being rejected...'
+							id="reason"
+							className={`mt-1 transition focus:border-primary focus:ring-1 focus:ring-primary 
+                ${isReasonInvalid ? "border-destructive focus:border-destructive focus:ring-destructive" : ""}`}
 							value={moderationReason}
-							onChange={(e) =>
-								setModerationReason(e.target.value)
-							}
-							rows={4}
-							className='resize-none transition'
+							onChange={(e) => setModerationReason(e.target.value)}
+							placeholder={isRejected ? "Explain why this artwork was rejected..." : isSuspended ? "Explain why this artwork was suspended..." : isApproved ? "Provide a reason for suspension..." : "Provide a reason if rejecting or suspending..."}
+							rows={3}
 						/>
+						{isReasonInvalid && (
+							<p className="text-xs text-destructive mt-1">
+								{artwork.moderationStatus === "rejected" ? "Please provide a rejection reason." : "Please provide a suspension reason."}
+							</p>
+						)}
 					</div>
 				</div>
 
-				<DialogFooter className='gap-2 sm:gap-0 border-t pt-4'>
+				<div className="mt-6 pt-4 border-t flex flex-col sm:flex-row justify-end gap-2">
+					<div className="flex flex-wrap gap-2 order-2 sm:order-1">
+						{/* Approve button - not shown for already approved artworks */}
+						{!isApproved && (
+							<Button 
+								onClick={onApprove} 
+								disabled={isPending}
+								className="bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+							>
+								<CheckCircle className="h-4 w-4 mr-1.5" />
+								{isSuspended ? "Unsuspend & Approve" : "Approve"}
+							</Button>
+						)}
+						
+						{/* Reject button - Only shown for pending artworks - not for approved or rejected */}
+						{!isRejected && !isApproved && (
+							<Button 
+								onClick={onReject} 
+								disabled={isPending || (artwork.moderationStatus === "rejected" && !reasonProvided)}
+								variant="destructive"
+								className="transition-colors"
+							>
+								<X className="h-4 w-4 mr-1.5" />
+								Reject
+							</Button>
+						)}
+						
+						{/* Suspend button - Only shown for approved artworks */}
+						{(isApproved && !isSuspended) && (
+							<Button 
+								onClick={onSuspend} 
+								disabled={isPending || (artwork.moderationStatus === "suspended" && !reasonProvided)}
+								variant="outline"
+								className="bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors"
+							>
+								<AlertTriangle className="h-4 w-4 mr-1.5" />
+								Suspend
+							</Button>
+						)}
+					</div>
+					
 					<Button
-						variant='outline'
+						variant="ghost"
 						onClick={() => onOpenChange(false)}
+						disabled={isPending}
+						className="order-1 sm:order-2 transition-colors"
 					>
 						Cancel
 					</Button>
-					<Button
-						variant='destructive'
-						onClick={onReject}
-						disabled={isPending || !moderationReason.trim()}
-						className='transition-all'
-					>
-						{isPending ? (
-							<div className='h-4 w-4 border-2 border-background border-t-transparent rounded-full animate-spin mr-2' />
-						) : (
-							<XCircle className='h-4 w-4 mr-2' />
-						)}
-						Reject
-					</Button>
-					<Button
-						onClick={onApprove}
-						disabled={isPending}
-						variant='default'
-						className='transition-all'
-					>
-						{isPending ? (
-							<div className='h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2' />
-						) : (
-							<CheckCircle className='h-4 w-4 mr-2' />
-						)}
-						Approve
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</div>
+		</CustomDialog>
 	);
 }

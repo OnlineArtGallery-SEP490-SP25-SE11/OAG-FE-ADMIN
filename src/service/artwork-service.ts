@@ -18,7 +18,6 @@ const artworkService = {
     if (!axios) {
       throw new Error("Failed to create axios instance");
     }
-
     const params = new URLSearchParams();
     params.append("skip", skip.toString());
     params.append("take", take.toString());
@@ -42,14 +41,13 @@ const artworkService = {
     moderationReason,
   }: {
     artworkId: string;
-    moderationStatus: string;
+    moderationStatus: "approved" | "rejected" | "suspended";
     moderationReason?: string;
   }) => {
     const axios = await createAxiosInstance({ useToken: true });
     if (!axios) {
       throw new Error("Failed to create axios instance");
     }
-
     const response = await axios.post(`/artwork/admin/${artworkId}`, {
       moderationStatus,
       moderationReason,

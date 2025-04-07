@@ -33,10 +33,14 @@ export interface Artwork {
 	status: string;
 	price: number;
 	artistId: Artist;
-	moderationStatus: 'pending' | 'approved' | 'rejected';
+	moderationStatus: 'pending' | 'approved' | 'rejected' | 'suspended';
 	moderationReason?: string;
 	moderatedBy?: string | null;
 	aiReview?: AIReview;
+	views: number;
+	buyers: string[]; // Array of buyer IDs
 	createdAt: string;
 	updatedAt: string;
+	__v?: number; // Version key from MongoDB
+	_optimistic?: boolean; // For UI optimistic updates
 }
