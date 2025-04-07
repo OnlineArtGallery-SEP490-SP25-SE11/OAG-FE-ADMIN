@@ -70,7 +70,7 @@ export const getBlogs = async ({
 		return res.data;
 	} catch (error) {
 		console.error("Error fetching blogs:", error);
-		return handleApiError(error,
+		throw handleApiError(error,
 			'Error fetching blogs'
 		);
 	}
@@ -112,7 +112,7 @@ export async function updateBlog({
 		return res.data;
 	} catch (error) {
 		console.error(`Error when updating blog:`, error);
-		return handleApiError<BlogRequestResponse>(
+		throw handleApiError<BlogRequestResponse>(
 			error,
 			'Failed to update blog',
 			'update_blog_error'
