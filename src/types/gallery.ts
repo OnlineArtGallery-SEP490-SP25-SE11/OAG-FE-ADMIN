@@ -173,14 +173,10 @@ export interface Gallery {
 		position: Vec3;
 		rotation: Vec3;
 	}[];
-	customCollider?: {
-		shape: 'box' | 'curved';
-		args: Vec3;
-		position: Vec3;
-	};
+	customColliders: CustomCollider[];
 }
 
-export type ColliderConfig = BoxColliderConfig | CurvedColliderConfig;
+export type CustomCollider = BoxColliderConfig | CurvedColliderConfig;
 
 export type GetGalleriesResponse = {
 	galleries: Gallery[];
@@ -193,7 +189,7 @@ export type GetGalleriesResponse = {
 		hasPrev: boolean;
 	};
 };
-	
+
 
 export type GalleryRequestResponse = {
 	gallery: Gallery;

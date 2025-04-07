@@ -12,12 +12,12 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import FileUploader from '@/components/ui.custom/file-uploader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ColliderConfig } from '@/types/gallery';
 import GalleryPreview from './gallery-preview';
 import ColliderEditor from './collider-editor';
 // import Image from 'next/image';
 import ArtworkPositionEditor from './artwork-position-editor';
 import Image from 'next/image';
+import { CustomCollider } from '@/types/gallery';
 
 // Types
 export interface GalleryTemplateData {
@@ -38,7 +38,7 @@ export interface GalleryTemplateData {
   previewImage: string;
   planImage: string;
   isPremium: boolean;
-  customColliders: ColliderConfig[];
+  customColliders: CustomCollider[];
   // Add artwork positions configuration
   artworkPlacements: {
     position: [number, number, number];
@@ -59,8 +59,8 @@ interface GalleryTemplateCreatorProps {
 interface GalleryTemplateContextType {
   templateData: GalleryTemplateData;
   updateTemplate: (data: Partial<GalleryTemplateData>) => void;
-  addCollider: (collider: ColliderConfig) => void;
-  updateCollider: (index: number, collider: Partial<ColliderConfig>) => void;
+  addCollider: (collider: CustomCollider) => void;
+  updateCollider: (index: number, collider: Partial<CustomCollider>) => void;
   removeCollider: (index: number) => void;
   isLoading: boolean;
 }
@@ -127,14 +127,14 @@ export default function GalleryTemplateCreator({
   }, [templateData, onUpdate]);
 
   // Collider management functions
-  const addCollider = (collider: ColliderConfig) => {
+  const addCollider = (collider: CustomCollider) => {
     setTemplateData(prev => ({
       ...prev,
       customColliders: [...prev.customColliders, collider]
     }));
   };
 
-  const updateCollider = (index: number, collider: Partial<ColliderConfig>) => {
+  const updateCollider = (index: number, collider: Partial<CustomCollider>) => {
     setTemplateData(prev => {
       const updatedColliders = [...prev.customColliders];
 
@@ -145,7 +145,7 @@ export default function GalleryTemplateCreator({
         ...collider,
         // Preserve the original shape to avoid type conflicts
         shape: collider.shape || currentCollider.shape
-      } as ColliderConfig;
+      } as CustomCollider;
 
       updatedColliders[index] = updatedCollider;
 

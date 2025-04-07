@@ -111,6 +111,7 @@ function GalleryScene({ templateData, visible = false }: { templateData: Gallery
         modelScale: templateData.modelScale,
         modelPosition: templateData.modelPosition,
         modelRotation: templateData.modelRotation,
+        customColliders: templateData.customColliders,
     };
 
     // If there's no modelPath, render a fallback
@@ -124,12 +125,11 @@ function GalleryScene({ templateData, visible = false }: { templateData: Gallery
     }
 
     // Custom colliders from the template
-    const customColliders = templateData.customColliders || [];
 
     return (
         <>
             <Floor /> {/* Add floor physics plane */}
-            <GalleryModel config={config} customColliders={customColliders} visible={visible} />
+            <GalleryModel config={config} visible={visible} />
 
             {/* Add ambient and direct lighting */}
             <ambientLight intensity={0.5} />
