@@ -40,7 +40,7 @@ import {
 } from "@tanstack/react-table";
 import { Artwork } from "@/types/artwork";
 import artworkService from "@/service/artwork-service";
-import { ArtworkLoadingSkeleton, TableSkeleton } from "./loading-skeleton";
+import { ArtworkLoadingSkeleton, TableRowSkeleton } from "./loading-skeleton";
 import { getArtworkColumns } from "./table-columns";
 import { ArtworkDetailsDialog, ModerationDialog } from "./artwork-dialogs";
 import { cn } from "@/lib/utils";
@@ -227,39 +227,29 @@ export default function ArtworkPage() {
   // Handle refresh with animation
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await refetch();
     
-    // Add a minimum delay for the animation
-    setTimeout(() => setIsRefreshing(false), 800);
-    
-    toast({
-      title: "Refreshed",
-      description: "Artwork data has been updated",
-      variant: "default",
-    });
+    try {
+      await refetch();
+      toast({
+        title: "Refreshed",
+        description: "Artwork data has been updated",
+        variant: "success",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh failed",
+        description: "Could not update artwork data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      // Add a minimum delay for the animation
+      setTimeout(() => setIsRefreshing(false), 800);
+    }
   }, [refetch, toast]);
 
   // Mutation for reviewing artwork
   const { mutate, isPending: isMutationPending } = useMutation({
     mutationFn: artworkService.reviewArtwork,
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Artwork moderation status updated",
-        variant: "success",
-      });
-      setShowModerationDialog(false);
-      setSelectedArtwork(null);
-      setModerationReason("");
-      queryClient.invalidateQueries({ queryKey: ["artworks"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update moderation status",
-        variant: "destructive",
-      });
-    },
   });
 
   // Extract data from query results
@@ -271,15 +261,88 @@ export default function ArtworkPage() {
   );
 
   // Handle artwork moderation
-  const handleModerateArtwork = useCallback((status: "approved" | "rejected") => {
+  const handleModerateArtwork = useCallback((status: "approved" | "rejected" | "suspended") => {
     if (!selectedArtwork) return;
     
-    mutate({
-      artworkId: selectedArtwork._id,
-      moderationStatus: status,
-      moderationReason: status === "rejected" ? moderationReason : undefined,
-    });
-  }, [selectedArtwork, moderationReason, mutate]);
+    // Validate requirements for moderation actions
+    if ((status === "rejected" || status === "suspended") && !moderationReason.trim()) {
+      toast({
+        title: "Reason Required",
+        description: `Please provide a reason for ${status === "rejected" ? "rejecting" : "suspending"} this artwork.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Optimistic update to UI for immediate feedback
+    queryClient.setQueryData(
+      ["artworks", pagination.pageIndex, pagination.pageSize, filterStatus, sorting],
+      (oldData: any) => {
+        if (!oldData?.data?.artworks) return oldData;
+        
+        const updatedArtworks = oldData.data.artworks.map((artwork: Artwork) =>
+          artwork._id === selectedArtwork._id
+            ? {
+                ...artwork,
+                moderationStatus: status,
+                moderationReason: status === "rejected" || status === "suspended" ? moderationReason : "",
+                _optimistic: true,
+              }
+            : artwork
+        );
+        
+        return {
+          ...oldData,
+          data: {
+            ...oldData.data,
+            artworks: updatedArtworks,
+          },
+        };
+      }
+    );
+    
+    mutate(
+      {
+        artworkId: selectedArtwork._id,
+        moderationStatus: status,
+        moderationReason: status === "rejected" || status === "suspended" ? moderationReason : undefined,
+      },
+      {
+        onSuccess: () => {
+          // Show success toast
+          toast({
+            title: "Success",
+            description: `Artwork has been ${status} successfully`,
+            variant: "success",
+          });
+          
+          setShowModerationDialog(false);
+          setSelectedArtwork(null);
+          setModerationReason("");
+          
+          // Invalidate and refetch to ensure data consistency
+          queryClient.invalidateQueries({ 
+            queryKey: ["artworks"],
+            refetchType: 'all',
+          });
+        },
+        onError: (error) => {
+          // Show error toast
+          toast({
+            title: "Moderation Failed",
+            description: "Could not update artwork moderation status. Please try again.",
+            variant: "destructive",
+          });
+          
+          // Revert optimistic update
+          queryClient.invalidateQueries({ 
+            queryKey: ["artworks"],
+            refetchType: 'all',
+          });
+        },
+      }
+    );
+  }, [selectedArtwork, moderationReason, mutate, queryClient, pagination.pageIndex, pagination.pageSize, filterStatus, sorting, toast]);
 
   // View artwork details
   const handleViewDetails = useCallback((artwork: Artwork) => {
@@ -499,19 +562,26 @@ export default function ArtworkPage() {
                 >
                   Rejected
                 </Badge>
+                <Badge
+                  variant={filterStatus === "suspended" ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer transition-all",
+                    filterStatus === "suspended"
+                      ? ""
+                      : "hover:bg-slate-50 hover:text-slate-700",
+                    isPending && "opacity-70"
+                  )}
+                  onClick={() => !isPending && handleFilterChange("suspended")}
+                >
+                  Suspended
+                </Badge>
               </div>
             </div>
           </div>
 
           {isFetching && !isLoading ? (
-            <div className="rounded-md border relative">
-              <div className="absolute inset-0 bg-background/50 z-10 flex items-center justify-center">
-                <div className="flex flex-col items-center bg-background rounded-lg shadow-sm p-4 border">
-                  <RefreshCw className="h-6 w-6 animate-spin text-primary mb-2" />
-                  <span className="text-sm">Loading data...</span>
-                </div>
-              </div>
-              <table className="w-full caption-bottom text-sm opacity-50">
+            <div className="rounded-md border">
+              <table className="w-full caption-bottom text-sm">
                 <thead className="[&_tr]:border-b bg-muted/50">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
@@ -532,52 +602,15 @@ export default function ArtworkPage() {
                   ))}
                 </thead>
                 <tbody className="divide-y">
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <tr
-                        key={row.id}
-                        className={`border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted ${
-                          row.original.moderationStatus === "pending"
-                            ? "bg-amber-50/20"
-                            : row.original.moderationStatus === "approved"
-                            ? "bg-emerald-50/20"
-                            : row.original.moderationStatus === "rejected"
-                            ? "bg-rose-50/20"
-                            : ""
-                        }`}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <td
-                            key={cell.id}
-                            className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={columns.length} className="h-24 text-center">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground p-4">
-                          <FileText className="h-8 w-8 mb-2 text-muted-foreground/50" />
-                          <p>No artworks found</p>
-                          {filterStatus && (
-                            <Button
-                              variant="link"
-                              onClick={() => handleFilterChange("")}
-                              className="mt-2"
-                            >
-                              Clear filters
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
+                  {/* Use the TableRowSkeleton component for each row */}
+                  {Array.from({ length: pagination.pageSize }).map((_, i) => (
+                    <TableRowSkeleton 
+                      key={`skeleton-row-${i}`} 
+                      columnCount={table.getVisibleLeafColumns().length} 
+                      index={i}
+                      alternateBg={true}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -605,23 +638,31 @@ export default function ArtworkPage() {
                 </thead>
                 <tbody className="divide-y">
                   {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
+                    table.getRowModel().rows.map((row, i) => (
                       <tr
                         key={row.id}
                         className={`border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted ${
+                          row.original._optimistic 
+                            ? "relative after:absolute after:inset-0 after:bg-primary/5 after:animate-pulse"
+                            : ""
+                        } ${
                           row.original.moderationStatus === "pending"
                             ? "bg-amber-50/20"
                             : row.original.moderationStatus === "approved"
                             ? "bg-emerald-50/20"
                             : row.original.moderationStatus === "rejected"
                             ? "bg-rose-50/20"
+                            : row.original.moderationStatus === "suspended"
+                            ? "bg-slate-50/20"
                             : ""
-                        }`}
+                        } ${i % 2 === 0 ? "" : "bg-muted/30"}`}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
-                            className="p-2 align-middle [&:has([role=checkbox])]:pr-0"
+                            className={`p-2 align-middle [&:has([role=checkbox])]:pr-0 ${
+                              row.original._optimistic ? "opacity-80" : ""
+                            }`}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
@@ -753,6 +794,7 @@ export default function ArtworkPage() {
         setModerationReason={setModerationReason}
         onApprove={() => handleModerateArtwork("approved")}
         onReject={() => handleModerateArtwork("rejected")}
+        onSuspend={() => handleModerateArtwork("suspended")}
         isPending={isMutationPending}
       />
 
