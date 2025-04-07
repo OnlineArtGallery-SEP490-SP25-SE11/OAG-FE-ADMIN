@@ -1,277 +1,319 @@
-'use client';
-
-import Image from 'next/image';
-import { useState } from 'react';
-
-interface Report {
-	id: string;
-	reporter: {
-		id: string;
-		name: string;
-		avatar: string;
-	};
-	reported: {
-		id: string;
-		name: string;
-		avatar: string;
-	};
-	reason: string;
-	evidence: string;
-	createdAt: string;
+import ManageReport from '../components/report-table';
+export default function Report() {
+    return (
+            <div>
+                <ManageReport />
+            </div>
+    );
 }
+// 'use client'
+// import { ReasonReport, ReportStatus } from "@/utils/enums"
+// import reportService from "@/service/report-service"
+// import { useMutation, useQuery } from "@tanstack/react-query"
+// import { useState, useEffect } from "react"
+// import { useToast } from "@/hooks/use-toast"
+// import { useRouter } from 'next/navigation'
+// import { motion } from "framer-motion"
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Badge } from "@/components/ui/badge"
+// import { Flag, RefreshCw } from "lucide-react"
+// import { VisibilityState } from "@tanstack/react-table"
 
-export default function ReportsPage() {
-	const [reports, setReports] = useState<Report[]>([
-		// Mock data - sau này sẽ được thay thế bằng dữ liệu thật từ API
-		{
-			id: '1',
-			reporter: {
-				id: '1',
-				name: 'John Doe',
-				avatar: '/IMG_4802.jpg'
-			},
-			reported: {
-				id: '2',
-				name: 'Jane Smith',
-				avatar: '/IMG_4802.jpg'
-			},
-			reason: 'Inappropriate content',
-			evidence: '/IMG_3199.jpg',
-			createdAt: '2024-03-20T10:30:00Z'
-		}
-		// Thêm các mẫu dữ liệu khác ở đây
-	]);
+// import { Report, ReportPageProps } from "./types"
+// import {
+//   BanConfirmationDialog,
+//   ReportLoadingState,
+//   ReportErrorState,
+//   ReportEmptyState,
+//   ReportFilters,
+//   ReportTable,
+//   ReportNoResults
+// } from "./components"
 
-	// Thêm state mới
-	const [showBanModal, setShowBanModal] = useState(false);
-	const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-	const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-	const [showDismissMessage, setShowDismissMessage] = useState(false);
+// export default function ManageReport({ params }: ReportPageProps) {
+//   const [processingIds, setProcessingIds] = useState<string[]>([]);
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [selectedStatus, setSelectedStatus] = useState<string>("ALL_STATUSES");
+//   const [selectedReason, setSelectedReason] = useState<string>("ALL_REASONS");
+//   const [showBanConfirm, setShowBanConfirm] = useState(false);
+//   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+//   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
+//   const [isRefreshing, setIsRefreshing] = useState(false);
+//   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+//     description: false,
+//     url: false,
+//     image: true,
+//   });
+//   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+//   const { toast } = useToast();
+//   const router = useRouter();
 
-	// Hàm xử lý hiển thị modal
-	const handleReviewClick = (report: Report) => {
-		setSelectedReport(report);
-		setShowBanModal(true);
-	};
+//   // Query to fetch reports
+//   const { data: reports, isLoading, isError, error, refetch, isFetching } = useQuery({
+//     queryKey: ['reports'],
+//     queryFn: async () => {
+//       try {
+//         const res = await reportService.getAll();
+//         console.log("API response:", res);
+        
+//         // Make sure it returns an array
+//         const reportData = Array.isArray(res) ? res : (res?.data || []);
+        
+//         // Log the first report to check its structure
+//         if (reportData.length > 0) {
+//           console.log("Sample report structure:", reportData[0]);
+//           console.log("First report ID:", reportData[0].id);
+//         }
+        
+//         return reportData;
+//       } catch(error) {
+//         console.error("Error fetching reports:", error);
+//         return [];
+//       }
+//     }
+//   });
 
-	// Hàm xử lý ban user
-	const handleBanUser = async (duration: number | 'permanent') => {
-		try {
-			// TODO: Gọi API để ban user
-			// const response = await fetch('/api/ban-user', {
-			//   method: 'POST',
-			//   body: JSON.stringify({
-			//     userId: selectedReport?.reported.id,
-			//     duration: duration,
-			//   }),
-			// });
+//   // Apply filters and search whenever reports, search query, or filters change
+//   useEffect(() => {
+//     if (!reports) return;
+    
+//     const reportList = Array.isArray(reports) ? reports : [];
+    
+//     let filtered = reportList;
+    
+//     // Apply search filter
+//     if (searchQuery) {
+//       const query = searchQuery.toLowerCase();
+//       filtered = filtered.filter(report => 
+//         report.reporterId.toLowerCase().includes(query) || 
+//         report.reportedId.toLowerCase().includes(query) || 
+//         report.description.toLowerCase().includes(query) ||
+//         (report.url && report.url.toLowerCase().includes(query))
+//       );
+//     }
+    
+//     // Apply status filter - only filter if not the "ALL_STATUSES" value
+//     if (selectedStatus && selectedStatus !== "ALL_STATUSES") {
+//       filtered = filtered.filter(report => report.status === selectedStatus);
+//     }
+    
+//     // Apply reason filter - only filter if not the "ALL_REASONS" value
+//     if (selectedReason && selectedReason !== "ALL_REASONS") {
+//       filtered = filtered.filter(report => report.reason === selectedReason);
+//     }
+    
+//     setFilteredReports(filtered);
+//   }, [reports, searchQuery, selectedStatus, selectedReason]);
+  
+//   // Responsive column visibility
+//   useEffect(() => {
+//     const handleResize = () => {
+//       const isMobile = window.innerWidth < 768;
+//       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+//       setColumnVisibility({
+//         description: !isMobile,
+//         url: !isMobile && !isTablet,
+//         image: !isMobile,
+//         reporterId: true,
+//         reportedId: true,
+//         refType: !isMobile,
+//         reason: true,
+//         status: true,
+//         actions: true,
+//       });
+//     };
+    
+//     handleResize();
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
 
-			// Cập nhật UI
-			setShowBanModal(false);
-			setShowSuccessMessage(true);
+//   const handleBanClick = (report: Report) => {
+//     if (!report.id) {
+//       console.error("Missing report ID for report:", report);
+//       toast({
+//         title: "Error",
+//         description: "Cannot ban user: Missing report ID",
+//         className: "bg-red-500 text-white border-red-600", 
+//         duration: 2000,
+//       });
+//       return;
+//     }
+    
+//     setSelectedReport(report);
+//     setShowBanConfirm(true);
+//   };
 
-			// Ẩn message sau 3 giây
-			setTimeout(() => {
-				setShowSuccessMessage(false);
-			}, 3000);
+//   const handleBan = async () => {
+//     if (!selectedReport || !selectedReport.id) {
+//       toast({
+//         title: "Error",
+//         description: "Cannot ban user: Invalid report ID",
+//         className: "bg-red-500 text-white border-red-600",
+//         duration: 2000,
+//       });
+//       return;
+//     }
+    
+//     try {
+//       // Add this report ID to processing state
+//       setProcessingIds(prev => [...prev, selectedReport.id]);
+      
+//       console.log("Banning user with report ID:", selectedReport.id);
+      
+//       // Call the API to ban based on report ID
+//       const response = await reportService.permanentBan(selectedReport.id);
+      
+//       // Show success message
+//       toast({
+//         title: "Success",
+//         description: "User has been banned successfully",
+//         className: "bg-green-500 text-white border-green-600",
+//         duration: 2000,
+//       });
+      
+//       // Close the dialog
+//       setShowBanConfirm(false);
+      
+//       // Refresh data to update UI
+//       refetch();
+//     } catch (error) {
+//       console.error("Error banning user:", error);
+      
+//       toast({
+//         title: "Error",
+//         description: `Failed to ban user: ${(error as Error)?.message || 'Unknown error'}`,
+//         className: "bg-red-500 text-white border-red-600",
+//         duration: 2000,
+//       });
+//     } finally {
+//       // Remove from processing state
+//       setProcessingIds(prev => prev.filter(id => id !== selectedReport.id));
+//       setSelectedReport(null);
+//     }
+//   };
 
-			// Xóa report đã xử lý khỏi danh sách
-			setReports(
-				reports.filter((report) => report.id !== selectedReport?.id)
-			);
-		} catch (error) {
-			console.error('Error banning user:', error);
-			alert('Failed to ban user. Please try again.');
-		}
-	};
+//   const clearFilters = () => {
+//     setSelectedStatus("ALL_STATUSES");
+//     setSelectedReason("ALL_REASONS");
+//     setSearchQuery("");
+//   };
 
-	// Hàm xử lý dismiss report
-	const handleDismiss = (report: Report) => {
-		try {
-			// Xóa report khỏi danh sách
-			setReports(reports.filter((r) => r.id !== report.id));
+//   const handleResolve = async (reportId: string) => {
+//     toast({
+//       title: "Info",
+//       description: "Resolve functionality not implemented yet",
+//       className: "bg-blue-500 text-white border-blue-600",
+//       duration: 2000,
+//     });
+//   };
 
-			// Hiển thị thông báo thành công
-			setShowDismissMessage(true);
+//   const handleRefresh = async () => {
+//     setIsRefreshing(true);
+//     await refetch();
+//     setTimeout(() => setIsRefreshing(false), 800);
+//   };
 
-			// Ẩn thông báo sau 3 giây
-			setTimeout(() => {
-				setShowDismissMessage(false);
-			}, 3000);
-		} catch (error) {
-			console.error('Error dismissing report:', error);
-			alert('Failed to dismiss report. Please try again.');
-		}
-	};
+//   const getReasonLabel = (reason: ReasonReport) => {
+//     const reasonMap: Record<ReasonReport, string> = {
+//       [ReasonReport.SPAM]: "Spam",
+//       [ReasonReport.HARASSMENT]: "Harassment",
+//       [ReasonReport.COPYRIGHT]: "Hate Speech",
+//       [ReasonReport.INAPPROPRIATE]: "Violence",
+//       [ReasonReport.Other]: "Other"
+//     };
+//     return reasonMap[reason] || reason;
+//   };
 
-	return (
-		<div className='container mx-auto p-6'>
-			<h1 className='text-2xl font-bold mb-6'>Reports Management</h1>
+//   const reasonOptions = Object.values(ReasonReport);
+//   const statusOptions = Object.values(ReportStatus);
 
-			<div className='overflow-x-auto'>
-				<table className='min-w-full bg-white rounded-lg overflow-hidden shadow-lg'>
-					<thead className='bg-gray-100'>
-						<tr>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Reporter
-							</th>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Reported User
-							</th>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Reason
-							</th>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Evidence
-							</th>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Time
-							</th>
-							<th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-								Actions
-							</th>
-						</tr>
-					</thead>
-					<tbody className='divide-y divide-gray-200'>
-						{reports.map((report) => (
-							<tr key={report.id} className='hover:bg-gray-50'>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='flex items-center'>
-										<div className='h-10 w-10 relative rounded-full overflow-hidden'>
-											<Image
-												src={report.reporter.avatar}
-												alt={report.reporter.name}
-												fill
-												className='object-cover'
-											/>
-										</div>
-										<div className='ml-4'>
-											<div className='text-sm font-medium text-gray-900'>
-												{report.reporter.name}
-											</div>
-											<div className='text-sm text-gray-500'>
-												ID: {report.reporter.id}
-											</div>
-										</div>
-									</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='flex items-center'>
-										<div className='h-10 w-10 relative rounded-full overflow-hidden'>
-											<Image
-												src={report.reported.avatar}
-												alt={report.reported.name}
-												fill
-												className='object-cover'
-											/>
-										</div>
-										<div className='ml-4'>
-											<div className='text-sm font-medium text-gray-900'>
-												{report.reported.name}
-											</div>
-											<div className='text-sm text-gray-500'>
-												ID: {report.reported.id}
-											</div>
-										</div>
-									</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='text-sm text-gray-900'>
-										{report.reason}
-									</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='h-16 w-16 relative rounded overflow-hidden'>
-										<Image
-											src={report.evidence}
-											alt='Evidence'
-											fill
-											className='object-cover cursor-pointer'
-											onClick={() => {
-												/* Thêm modal để xem ảnh full size */
-											}}
-										/>
-									</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<div className='text-sm text-gray-900'>
-										{new Date(
-											report.createdAt
-										).toLocaleString()}
-									</div>
-								</td>
-								<td className='px-6 py-4 whitespace-nowrap'>
-									<button
-										className='bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mr-2'
-										onClick={() =>
-											handleReviewClick(report)
-										}
-									>
-										Review
-									</button>
-									<button
-										className='bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600'
-										onClick={() => handleDismiss(report)}
-									>
-										Dismiss
-									</button>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div>
+//   if (isLoading) {
+//     return <ReportLoadingState />;
+//   }
+  
+//   if (isError) {
+//     return <ReportErrorState error={error} refetch={refetch} />;
+//   }
 
-			{/* Modal Ban User */}
-			{showBanModal && (
-				<div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-					<div className='bg-white p-6 rounded-lg shadow-xl'>
-						<h2 className='text-xl font-bold mb-4'>
-							Ban User: {selectedReport?.reported.name}
-						</h2>
-						<div className='space-y-3'>
-							<button
-								className='w-full bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600'
-								onClick={() => handleBanUser(30)}
-							>
-								Ban 30 days
-							</button>
-							<button
-								className='w-full bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600'
-								onClick={() => handleBanUser(60)}
-							>
-								Ban 60 days
-							</button>
-							<button
-								className='w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600'
-								onClick={() => handleBanUser('permanent')}
-							>
-								Permanent Ban
-							</button>
-							<button
-								className='w-full bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600'
-								onClick={() => setShowBanModal(false)}
-							>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+//   if (filteredReports.length === 0 && !searchQuery && selectedStatus === "ALL_STATUSES" && selectedReason === "ALL_REASONS") {
+//     return <ReportEmptyState onRefresh={handleRefresh} />;
+//   }
 
-			{/* Success Message */}
-			{showSuccessMessage && (
-				<div className='fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg'>
-					User has been banned successfully!
-				</div>
-			)}
+//   return (
+//     <Card className="border-0 shadow-xl bg-white rounded-xl w-full">
+//       <CardHeader className="pb-0 space-y-4">
+//         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+//           <CardTitle className="text-xl md:text-2xl font-bold text-gray-800 flex items-center">
+//             <Flag className="mr-2 h-6 w-6 text-blue-500" />
+//             Manage Reports
+//             <Badge className="ml-3 bg-blue-100 text-blue-700 hover:bg-blue-200">
+//               {filteredReports.length} Reports
+//             </Badge>
+//           </CardTitle>
+//           <ReportFilters 
+//             searchQuery={searchQuery}
+//             setSearchQuery={setSearchQuery}
+//             selectedStatus={selectedStatus}
+//             setSelectedStatus={setSelectedStatus}
+//             selectedReason={selectedReason}
+//             setSelectedReason={setSelectedReason}
+//             statusOptions={statusOptions}
+//             reasonOptions={reasonOptions}
+//             getReasonLabel={getReasonLabel}
+//             clearFilters={clearFilters}
+//             handleRefresh={handleRefresh}
+//             isRefreshing={isRefreshing}
+//             columnVisibility={columnVisibility}
+//             setColumnVisibility={setColumnVisibility}
+//             pagination={pagination}
+//             setPagination={setPagination}
+//             totalFilteredRows={filteredReports.length}
+//             columns={[]} // Need to pass actual columns here if needed
+//           />
+//         </div>
+//       </CardHeader>
+      
+//       <CardContent className="p-2 md:p-4">
+//         {filteredReports.length === 0 ? (
+//           <ReportNoResults clearFilters={clearFilters} />
+//         ) : (
+//           <ReportTable
+//             reports={filteredReports}
+//             searchQuery={searchQuery}
+//             columnVisibility={columnVisibility}
+//             pagination={pagination}
+//             processingIds={processingIds}
+//             onBanClick={handleBanClick}
+//             onResolve={handleResolve}
+//             getReasonLabel={getReasonLabel}
+//             onColumnVisibilityChange={setColumnVisibility}
+//             onPaginationChange={setPagination}
+//             onGlobalFilterChange={setSearchQuery}
+//           />
+//         )}
+//       </CardContent>
 
-			{/* Dismiss Success Message */}
-			{showDismissMessage && (
-				<div className='fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg'>
-					Report has been dismissed successfully!
-				</div>
-			)}
-		</div>
-	);
-}
+//       {/* Ban confirmation dialog */}
+//       <BanConfirmationDialog
+//         open={showBanConfirm}
+//         onOpenChange={setShowBanConfirm}
+//         onConfirm={handleBan}
+//         report={selectedReport}
+//         isProcessing={processingIds.includes(selectedReport?.id || '')}
+//         getReasonLabel={getReasonLabel}
+//       />
+
+//       {isFetching && (
+//         <motion.div
+//           initial={{ opacity: 0 }}
+//           animate={{ opacity: 1 }}
+//           className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 text-sm text-gray-700 flex items-center space-x-2 border border-gray-200 z-50"
+//         >
+//           <RefreshCw className="h-4 w-4 animate-spin text-blue-500" />
+//           <span>Updating data...</span>
+//         </motion.div>
+//       )}
+//     </Card>
+//   );
+// }
