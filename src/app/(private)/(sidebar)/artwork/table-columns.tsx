@@ -11,6 +11,7 @@ import {
   FileText,
   Image as ImageIcon,
   MoreHorizontal,
+  PauseCircle,
   Tag,
   User 
 } from "lucide-react";
@@ -186,15 +187,26 @@ export const getArtworkColumns = ({
     ),
     cell: ({ row }) => {
       const status = row.original.moderationStatus;
-      const badgeStyles = {
-        pending: "bg-amber-50 text-amber-700 border-amber-200",
-        approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-        rejected: "bg-rose-50 text-rose-700 border-rose-200",
-      };
       return (
-        <Badge variant="outline" className={badgeStyles[status]}>
-          {status}
-        </Badge>
+        <div className="flex items-center">
+          {status === "pending" ? (
+            <Badge variant="outline" className="bg-amber-50 text-amber-700">
+              Pending
+            </Badge>
+          ) : status === "approved" ? (
+            <Badge variant="outline" className="bg-emerald-50 text-emerald-700">
+              Approved
+            </Badge>
+          ) : status === "rejected" ? (
+            <Badge variant="outline" className="bg-rose-50 text-rose-700">
+              Rejected
+            </Badge>
+          ) : status === "suspended" ? (
+            <Badge variant="outline" className="bg-slate-50 text-slate-700">
+              Suspended
+            </Badge>
+          ) : null}
+        </div>
       );
     },
   },
@@ -283,15 +295,44 @@ export const getArtworkColumns = ({
                 <Eye className="mr-2 h-4 w-4" /> View details
               </DropdownMenuItem>
 
-              {artwork.moderationStatus !== "approved" && (
+              <DropdownMenuSeparator />
+              
+              {/* Show different moderation options based on current status */}
+              {artwork.moderationStatus === "pending" && (
                 <>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">Moderation</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => handleOpenModerationDialog(artwork)}
+                    className="cursor-pointer text-amber-600 flex items-center"
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Approve / Reject
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              {artwork.moderationStatus === "approved" && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">Moderation</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    onClick={() => handleOpenModerationDialog(artwork)}
+                    className="cursor-pointer text-slate-600 flex items-center"
+                  >
+                    <PauseCircle className="mr-2 h-4 w-4" />
+                    Suspend artwork
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              {(artwork.moderationStatus === "rejected" || artwork.moderationStatus === "suspended") && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">Moderation</DropdownMenuLabel>
                   <DropdownMenuItem
                     onClick={() => handleOpenModerationDialog(artwork)}
                     className="cursor-pointer text-emerald-600 flex items-center"
                   >
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    Review artwork
+                    Approve artwork
                   </DropdownMenuItem>
                 </>
               )}
