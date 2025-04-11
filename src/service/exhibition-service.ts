@@ -4,6 +4,7 @@ import { ApiResponse } from "@/types/response";
 import { ExhibitionStatus } from "@/types/exhibition";
 import { handleApiError } from "@/utils/error-handler";
 import axiosInstance from 'axios';
+import { getCurrentUser } from "@/lib/session";
 
 export const deleteExhibition = async (exhibitionId: string) => {
   try {
@@ -61,7 +62,12 @@ export const getExhibitions = async ({
 
     const queryString = queryParams.toString();
     const url = `/exhibition${queryString ? `?${queryString}` : ''}`;
-    const res = await createApi()(url);
+
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error("Authorization error");
+    }
+    const res = await createApi(user.accessToken).get(url);
     return res.data;
   } catch (error) {
     console.error("Error fetching exhibitions:", error);
@@ -81,8 +87,9 @@ export async function updateExhibition({
     welcomeImage?: string;
     backgroundMedia?: string;
     backgroundAudio?: string;
-    contents?: Array<{languageCode: string, name: string, description: string}>;
+    contents?: Array<{ languageCode: string, name: string, description: string }>;
     status?: ExhibitionStatus;
+    isFeatured?: boolean;
   };
 }): Promise<ApiResponse<ExhibitionRequestResponse>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,9 +102,10 @@ export async function updateExhibition({
   if (updateData.backgroundAudio) payload.backgroundAudio = updateData.backgroundAudio;
   if (updateData.contents) payload.contents = updateData.contents;
   if (updateData.status) payload.status = updateData.status;
-  
+  if (updateData.isFeatured !== undefined) payload.isFeatured = updateData.isFeatured;
+
   try {
-    const res = await createApi(accessToken).put(
+    const res = await createApi(accessToken).patch(
       `/exhibition/${updateData._id}`,
       payload
     );
@@ -120,7 +128,7 @@ export async function approveExhibition({
   exhibitionId: string;
 }): Promise<ApiResponse<null>> {
   try {
-    const res = await createApi(accessToken).put(`/exhibition/${exhibitionId}/approve`);
+    const res = await createApi(accessToken).patch(`/exhibition/${exhibitionId}/approve`);
     return res.data;
   } catch (err) {
     if (axiosInstance.isAxiosError(err)) {
@@ -145,7 +153,7 @@ export async function rejectExhibition({
   reason: string;
 }): Promise<ApiResponse<null>> {
   try {
-    const res = await createApi(accessToken).put(`/exhibition/${exhibitionId}/reject`, { reason });
+    const res = await createApi(accessToken).patch(`/exhibition/${exhibitionId}/reject`, { reason });
     return res.data;
   } catch (error) {
     if (axiosInstance.isAxiosError(error)) {

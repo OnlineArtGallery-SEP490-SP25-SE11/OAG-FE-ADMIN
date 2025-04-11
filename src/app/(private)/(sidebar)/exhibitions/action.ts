@@ -3,7 +3,7 @@
 import { adminOnlyAction } from "@/lib/safe-action";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { approveExhibition, deleteExhibition, rejectExhibition } from "@/service/exhibition-service";
+import { approveExhibition, deleteExhibition, rejectExhibition, updateExhibition } from "@/service/exhibition-service";
 
 export const deleteExhibitionAction = adminOnlyAction
   .createServerAction()
@@ -45,5 +45,23 @@ export const rejectExhibitionAction = adminOnlyAction
       reason,
     });
     console.log("Exhibition rejected:", _rejectedExhibition);
+    revalidatePath("/exhibitions");
+  });
+
+export const toggleExhibitionFeaturedAction = adminOnlyAction
+  .createServerAction()
+  .input(z.object({
+    exhibitionId: z.string(),
+    isFeatured: z.boolean(),
+  }))
+  .handler(async ({ input: { exhibitionId, isFeatured }, ctx }) => {
+    const _updatedExhibition = await updateExhibition({
+      accessToken: ctx.user.accessToken,
+      updateData: {
+        _id: exhibitionId,
+        isFeatured,
+      }
+    });
+    console.log("Exhibition updated:", _updatedExhibition);
     revalidatePath("/exhibitions");
   });

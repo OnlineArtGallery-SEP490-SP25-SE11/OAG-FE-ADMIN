@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BlogStatus } from "@/utils/enums";
 import { Column } from "@tanstack/react-table";
+import { ExhibitionStatus } from "@/types/exhibition";
 
 // Status options for dropdown filter
 export const statusOptions = [
@@ -21,6 +22,13 @@ export const statusOptions = [
     { value: BlogStatus.REJECTED, label: "Rejected" },
 ];
 
+export const exhibitionStatusOptions = [
+    { value: ExhibitionStatus.PUBLISHED, label: "Published" },
+    { value: ExhibitionStatus.PENDING, label: "Pending" },
+    { value: ExhibitionStatus.DRAFT, label: "Draft" },
+    { value: ExhibitionStatus.PRIVATE, label: "Private" },
+    { value: ExhibitionStatus.REJECTED, label: "Rejected" },
+];
 // SortableHeader - handles sort logic with proper hook usage
 export function SortableHeader({
     column,
@@ -40,11 +48,22 @@ export function SortableHeader({
 
     const handleSort = () => {
         const params = new URLSearchParams(searchParams.toString());
-        params.set('sortField', fieldName);
-
-        if (isSorted === 'asc') {
+        
+        // Check if we're already sorting by this field
+        const currentSortField = searchParams.get('sortField');
+        const currentSortOrder = searchParams.get('sortOrder');
+        
+        // Clear sort logic
+        if (currentSortField === fieldName && currentSortOrder === 'desc') {
+            // If already sorted desc, remove sorting
+            params.delete('sortField');
+            params.delete('sortOrder');
+        } else if (currentSortField === fieldName && currentSortOrder === 'asc') {
+            // If already sorted asc, change to desc
             params.set('sortOrder', 'desc');
         } else {
+            // If not sorted or sorted by different column, set to asc
+            params.set('sortField', fieldName);
             params.set('sortOrder', 'asc');
         }
 
@@ -61,7 +80,9 @@ export function SortableHeader({
             className={fieldName === 'title' ? "p-0 hover:bg-transparent" : "w-full font-semibold text-center"}
         >
             {title}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {isSorted === 'asc' && <ArrowUpDown className="ml-2 h-4 w-4 transform rotate-180" />}
+            {isSorted === 'desc' && <ArrowUpDown className="ml-2 h-4 w-4" />}
+            {!isSorted && <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />}
         </Button>
     );
 }
