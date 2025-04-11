@@ -60,7 +60,7 @@ export async function ExhibitionsTable({
 }) {
   // Parse and validate search params
   const page = Number(searchParams?.page) || 1;
-  const limit = Number(searchParams?.limit) || 10;
+  const limit = Number(searchParams?.limit) || 6;
   
   // Parse sort parameters
   const sortField = searchParams?.sortField || 'createdAt';
@@ -111,7 +111,7 @@ export function TableSkeleton() {
           >
             {[...Array(6)].map((_, cellIndex) => (
               <div key={`cell-${rowIndex}-${cellIndex}`} className="flex-1 p-2">
-                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-16 w-full" />
               </div>
             ))}
           </div>
