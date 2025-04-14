@@ -31,7 +31,7 @@ import {
   CardTitle, 
   CardDescription 
 } from '@/components/ui/card';
-import { Calendar, Clock, Link as LinkIcon, Users, Tag, Info } from 'lucide-react';
+import { Calendar, Clock, Link as LinkIcon, Users, Tag, Info, InfoIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -213,22 +213,73 @@ export default function UpdateEventPage({ params }: UpdateEventPageProps) {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Event Type</FormLabel>
-                          <div className="flex items-center space-x-2">
-                            <Tag className="w-4 h-4 text-muted-foreground" />
-                            <FormControl>
-                              <Input placeholder="Conference, Workshop, etc." {...field} className="h-10" />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                   <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => {
+                          const [isCustomType, setIsCustomType] = useState(false);
+                          
+                          // Handle either dropdown selection or custom input
+                          const handleTypeChange = (value: string) => {
+                            if (value === 'custom') {
+                              setIsCustomType(true);
+                              // Don't update field value yet, wait for custom input
+                            } else {
+                              field.onChange(value);
+                              setIsCustomType(false);
+                            }
+                          };
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">Event Type</FormLabel>
+                              <FormControl>
+                                {isCustomType ? (
+                                  <div className="relative">
+                                    <Input 
+                                      placeholder="Enter custom event type" 
+                                      className="h-12 pl-10"
+                                      value={field.value} 
+                                      onChange={(e) => field.onChange(e.target.value)}
+                                    />
+                                    <InfoIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                                    <Button 
+                                      type="button"
+                                      variant="ghost" 
+                                      size="sm" 
+                                      className="absolute right-2 top-3 h-6"
+                                      onClick={() => setIsCustomType(false)}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Select 
+                                    value={field.value} 
+                                    onValueChange={handleTypeChange}
+                                  >
+                                    <SelectTrigger className="h-12 pl-10">
+                                      <SelectValue placeholder="Select event type" />
+                                    </SelectTrigger>
+                                    <InfoIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                                    <SelectContent>
+                                      <SelectItem value="thematic exhibitions">Thematic Exhibitions</SelectItem>
+                                      <SelectItem value="solo exhibitions">Solo Exhibitions</SelectItem>
+                                      <SelectItem value="group exhibitions">Group Exhibitions</SelectItem>
+                                      <SelectItem value="artist talks">Artist Talks</SelectItem>
+                                      <SelectItem value="workshop">Workshop</SelectItem>
+                                      <SelectItem value="memorial Exhibitions">Memorial Exhibitions</SelectItem>
+                                      <SelectItem value="honorary exhibitions">Honorary Exhibitions</SelectItem>
+                                      <SelectItem value="custom">Enter Custom Type...</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
+                      />
                   </div>
 
                   {/* Description */}
