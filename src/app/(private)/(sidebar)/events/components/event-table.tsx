@@ -48,6 +48,8 @@ import {
   AlertTriangle,
   Edit,
   Trash,
+  Link as LinkIcon,
+  ExternalLink
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -69,6 +71,7 @@ export type Event = {
   organizer: string
   startDate: string
   endDate: string
+  link: string
 }
 
 // Hàm định dạng ngày
@@ -202,6 +205,7 @@ export default function EventTable() {
         image: !isMobile,
         type: !isMobile && !isTablet,
         organizer: !isMobile && !isTablet,
+        link: !isMobile && !isTablet, // Add link visibility control
         index: true,
         title: true,
         status: true,
@@ -364,6 +368,42 @@ export default function EventTable() {
           </span>
         ),
         size: 100,
+      },
+      // Add new link column here
+      {
+        accessorKey: "link",
+        header: () => (
+          <span className="flex items-center">
+            <LinkIcon className="mr-1 h-4 w-4 text-blue-500" />
+            Link
+          </span>
+        ),
+        cell: ({ row }) => {
+          const link = row.original.link;
+          return link ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a 
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center text-blue-600 hover:text-blue-800 hover:underline truncate max-w-[120px]"
+                  >
+                    <span className="truncate">{link.replace(/^https?:\/\//, '')}</span>
+                    <ExternalLink className="ml-1 h-3 w-3 flex-shrink-0" />
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-sm">
+                  {link}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <span className="text-gray-400 italic">No link</span>
+          );
+        },
+        size: 120,
       },
       {
         accessorKey: "startDate",

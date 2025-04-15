@@ -48,6 +48,22 @@ const reportService = {
             console.error("Error banning report:", error);
             return null;
         }
+    },
+
+    async temporaryBan(id : string) {
+        try{
+            const axios = await createAxiosInstance({useToken:true});
+            if(!axios){
+                throw new Error("Failed to create axios instance");
+            }
+            const res = await axios.put(`/report/temporary-ban/${id}`);
+            console.log(res.data);
+            return res.data;
+        }
+        catch(error){
+            console.error("Error banning report:", error);
+            return null;
+        }
     }
 }
 
