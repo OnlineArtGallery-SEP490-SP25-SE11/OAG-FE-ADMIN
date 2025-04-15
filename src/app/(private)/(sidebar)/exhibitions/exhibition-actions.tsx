@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisVertical, Eye, TrashIcon, ExternalLink } from "lucide-react";
+import { EllipsisVertical, Eye, TrashIcon, ExternalLink, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DeleteModal } from "@/components/ui.custom/delete-modal";
 import { useServerAction } from "zsa-react";
-import { deleteExhibitionAction } from "./action";
+import { deleteExhibitionAction, toggleExhibitionFeaturedAction } from "./action";
 import { btnIconStyles, btnStyles } from "@/styles/icons";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -18,16 +18,38 @@ import { InteractiveOverlay } from "@/components/ui.custom/interactive-overlay";
 import { ApproveExhibitionForm } from "./approve-exhibition-form";
 import { Exhibition, ExhibitionStatus } from "@/types/exhibition";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
 export function ExhibitionActions({ exhibition }: { exhibition: Exhibition }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditExhibitionOpen, setIsEditExhibitionOpen] = useState(false);
+  
+  const { toast } = useToast();
 
   const { execute, isPending } = useServerAction(deleteExhibitionAction, {
     onSuccess() {
       setIsOpen(false);
+      toast({
+        title: "Exhibition deleted",
+        description: "Exhibition has been deleted successfully",
+        variant: "success",
+      });
     }
   });
+
+  const { execute: toggleFeatured, isPending: isFeaturePending } = useServerAction(
+    toggleExhibitionFeaturedAction,
+    {
+      onSuccess() {
+        setIsOpen(false);
+        toast({
+          title: "Exhibition updated",
+          description: `Exhibition ${exhibition.isFeatured ? "unmarked" : "marked"} as featured`,
+          variant: "success",
+        });
+      }
+    }
+  );
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -61,7 +83,7 @@ export function ExhibitionActions({ exhibition }: { exhibition: Exhibition }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <Link href={`/exhibitions/preview/${exhibition._id}`} passHref>
+          <Link href={`/exhibitions/preview/${exhibition._id}`} target="_blank" rel="noopener noreferrer" passHref>
             <DropdownMenuItem className={cn(btnStyles, "text-gray-500")}>
               <ExternalLink className={btnIconStyles} />
               Preview
@@ -79,14 +101,23 @@ export function ExhibitionActions({ exhibition }: { exhibition: Exhibition }) {
               Review
             </DropdownMenuItem>
           )}
-          
-          {/* <Link href={`/exhibitions/edit/${exhibition._id}`} passHref>
-            <DropdownMenuItem className={btnStyles}>
-              <Eye className={btnIconStyles} />
-              Edit
+
+          {exhibition.status === ExhibitionStatus.PUBLISHED && (
+            <DropdownMenuItem
+              className={cn(btnStyles, exhibition.isFeatured ? "text-yellow-500" : "text-gray-500")}
+              onClick={() => {
+                toggleFeatured({
+                  exhibitionId: exhibition._id,
+                  isFeatured: !exhibition.isFeatured
+                });
+              }}
+              disabled={isFeaturePending}
+            >
+              <Star className={cn(btnIconStyles, exhibition.isFeatured && "fill-current")} />
+              {exhibition.isFeatured ? "Unmark Featured" : "Mark as Featured"}
             </DropdownMenuItem>
-          </Link> */}
-          
+          )}
+
           <DropdownMenuItem
             className={cn(btnStyles, "text-red-500")}
             onClick={() => {

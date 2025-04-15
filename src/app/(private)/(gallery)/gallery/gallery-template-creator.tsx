@@ -434,6 +434,8 @@ export default function GalleryTemplateCreator({
               <div className="space-y-2">
                 <Label>3D Model (.glb)</Label>
                 <FileUploader
+                  maxFiles={1}
+                  maxSize={100 * 1024 * 1024} // 100 MB
                   accept={{ 'model/gltf-binary': ['.glb'] }}
                   multiple={false}
                   onFilesChange={handleModelUpload}

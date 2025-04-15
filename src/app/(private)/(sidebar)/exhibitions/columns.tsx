@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Exhibition, ExhibitionStatus } from "@/types/exhibition";
 import { ExhibitionActions } from "./exhibition-actions";
-import { FilterHeader, SortableHeader, statusOptions } from "../blogs/column-headers";
+import { FilterHeader, SortableHeader, exhibitionStatusOptions } from "../blogs/column-headers";
 
 export const columns: ColumnDef<Exhibition>[] = [
     {
@@ -80,7 +80,7 @@ export const columns: ColumnDef<Exhibition>[] = [
     },
     {
         accessorKey: "status",
-        header: ({ column }) => <div className="w-[150px]"><FilterHeader column={column} title="Status" paramName="status" options={statusOptions} /></div>,
+        header: ({ column }) => <div className="w-[150px]"><FilterHeader column={column} title="Status" paramName="status" options={exhibitionStatusOptions} /></div>,
         cell: ({ row }) => {
             const status = row.original?.status || ExhibitionStatus.DRAFT;
 
