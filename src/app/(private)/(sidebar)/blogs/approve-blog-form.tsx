@@ -148,7 +148,7 @@ export function ApproveBlogForm({ blog, setIsOpen }: { blog: Blog; setIsOpen: (o
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter title" className="w-full" />
+                      <Input {...field} disabled placeholder="Enter title" className="w-full" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
