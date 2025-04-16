@@ -19,8 +19,11 @@ export const deleteExhibition = async (exhibitionId: string) => {
 
 export const getExhibition = async (exhibitionId: string): Promise<ApiResponse<ExhibitionRequestResponse>> => {
   try {
-    const api = createApi();
-    const response = await api.get(`/exhibition/${exhibitionId}`);
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error("Authorization error");
+    }
+    const response = await createApi(user.accessToken).get(`/exhibition/${exhibitionId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching exhibition:", error);

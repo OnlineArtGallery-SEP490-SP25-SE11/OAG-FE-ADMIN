@@ -71,11 +71,9 @@ export const createGalleryTemplateAction = adminOnlyAction
       customColliders: input.customColliders || [],
       artworkPlacements: input.artworkPlacements || [],
      };
-
-     console.log('Saving gallery template2:', templateData);
-
     
     const res = await createGalleryTemplate(user.accessToken, templateData);
+    revalidatePath(`/gallery`);
     return res.data;
   });
 
