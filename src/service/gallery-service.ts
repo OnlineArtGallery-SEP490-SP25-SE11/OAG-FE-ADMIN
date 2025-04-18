@@ -243,6 +243,19 @@ export async function saveGalleryTemplate(accessToken: string, templateData: Gal
     }
 }
 
+export async function updateGalleryStatus(accessToken: string, id: string, status: boolean): Promise<ApiResponse<void>> {
+    try {
+        const res = await createApi(accessToken).patch(`/gallery/${id}`, { isActive: status });
+        return res.data;
+    } catch (error) {
+        console.error('Error updating gallery status:', error);
+        throw handleApiError<void>(
+            error,
+            'Failed to update gallery status'
+        );
+    }
+}
+
 // Function to get a list of gallery templates
 export async function getGalleryTemplates(params?: {
     page?: number;

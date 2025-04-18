@@ -38,6 +38,7 @@ export interface GalleryTemplateData {
   previewImage: string;
   planImage: string;
   isPremium: boolean;
+  isActive: boolean;
   customColliders: CustomCollider[];
   // Add artwork positions configuration
   artworkPlacements: {
@@ -82,6 +83,7 @@ const defaultTemplate: GalleryTemplateData = {
   previewImage: '',
   planImage: '',
   isPremium: false,
+  isActive: true,
   customColliders: [],
   // Default artwork positions
   artworkPlacements: []
@@ -435,7 +437,7 @@ export default function GalleryTemplateCreator({
                 <Label>3D Model (.glb)</Label>
                 <FileUploader
                   maxFiles={1}
-                  maxSize={100 * 1024 * 1024} // 100 MB
+                  maxSize={10 * 1024 * 1024} // 10 MB
                   accept={{ 'model/gltf-binary': ['.glb'] }}
                   multiple={false}
                   onFilesChange={handleModelUpload}

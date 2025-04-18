@@ -59,7 +59,7 @@ export default function AuthPage() {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center p-4">
+		<div className="h-screen w-screen flex items-center justify-center p-4 bg-gray-50 overflow-hidden">
 			<motion.div
 				variants={containerVariants}
 				initial="hidden"
