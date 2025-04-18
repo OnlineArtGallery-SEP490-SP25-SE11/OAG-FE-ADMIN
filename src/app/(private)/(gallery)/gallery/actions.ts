@@ -53,6 +53,7 @@ const galleryTemplateSchema = z.object({
   previewImage: z.string().min(1, "Preview image is required"),
   planImage: z.string().min(1, "Plane image is required"),
   isPremium: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   customColliders: z.array(customColliderSchema).optional(),
   artworkPlacements: z.array(
     z.object({

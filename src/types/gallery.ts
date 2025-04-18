@@ -169,6 +169,7 @@ export interface Gallery {
 	previewImage: string;
 	planImage: string;
 	isPremium: boolean;
+	isActive: boolean;
 	artworkPlacements: {
 		position: Vec3;
 		rotation: Vec3;

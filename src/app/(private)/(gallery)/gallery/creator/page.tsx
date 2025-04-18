@@ -32,7 +32,8 @@ const galleryTemplateSchema = z.object({
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
   planImage: z.string().min(1, "Plane image is required"),
-  isPrenium: z.boolean().default(false),
+  isPremium: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   customColliders: z.array(z.any()).optional(),
   artworkPlacements: z.array(
     z.object({
