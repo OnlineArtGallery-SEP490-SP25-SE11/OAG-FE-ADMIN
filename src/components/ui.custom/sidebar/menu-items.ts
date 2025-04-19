@@ -1,12 +1,15 @@
 import {
 	BarChart2,
 	Bell,
+	Cylinder,
 	FileText,
 	Home,
 	Newspaper,
 	Settings,
 	UserCog,
-	Users
+	Users,
+	ImagePlus,
+	Radio,
 } from 'lucide-react';
 const menuItems = [
 	{ href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -28,10 +31,27 @@ const menuItems = [
 			}
 		]
 	},
-	{ href: '/events', label: 'Events', icon: FileText },
+	{ href: '/events', label: 'Events', icon: FileText,
+		children: [
+			{
+				href: '/events/manage',
+				label: 'Manage',
+				icon: FileText
+			},
+			{
+				href: '/events/create',
+				label: 'Create',
+				icon: FileText
+			}
+		]
+	 },
 	{ href: '/notifications', label: 'Notifications', icon: Bell },
+	{ href: '/artwork', label: 'Artwork', icon: ImagePlus },
 	{ href: '/blogs', label: 'Blogs', icon: Newspaper },
+	{ href: '/gallery', label: 'Gallery', icon: Cylinder },
+	{ href: '/exhibitions', label: 'Exhibition', icon: Radio },
 	{ href: '/settings', label: 'Settings', icon: Settings },
+	
 	
 ];
 
