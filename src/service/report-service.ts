@@ -1,4 +1,5 @@
 import { createAxiosInstance } from "@/lib/axios";
+import { ReportStatus } from "@/utils/enums";
 
 const reportService = {
     async getAll() {
@@ -62,6 +63,21 @@ const reportService = {
         }
         catch(error){
             console.error("Error banning report:", error);
+            return null;
+        }
+    },
+    async updateStatus(id : string, status : ReportStatus) {
+        try{
+            const axios = await createAxiosInstance({useToken:true});
+            if(!axios){
+                throw new Error("Failed to create axios instance");
+            }
+            const res = await axios.put(`/report/status/${id}`, {status});
+            console.log(res.data);
+            return res.data;
+        }
+        catch(error){
+            console.error("Error updating report status:", error);
             return null;
         }
     }

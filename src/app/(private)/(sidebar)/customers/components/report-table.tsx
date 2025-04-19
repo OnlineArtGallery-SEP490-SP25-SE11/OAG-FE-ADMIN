@@ -416,12 +416,48 @@ export default function ManageReport() {
   };
 
   const handleResolve = async (reportId: string) => {
-    toast({
-      title: "Info",
-      description: "Resolve functionality not implemented yet",
-      className: "bg-blue-500 text-white border-blue-600",
-      duration: 2000,
-    });
+    if (!reportId) {
+      toast({
+        title: "Error",
+        description: "Cannot resolve report: Invalid report ID",
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+      return;
+    }
+    
+    try {
+      // Add this report ID to processing state
+      setProcessingIds(prev => [...prev, reportId]);
+      
+      console.log("Resolving report with ID:", reportId);
+      
+      // Call the API to update the report status to RESOLVED
+      const response = await reportService.updateStatus(reportId, ReportStatus.RESOLVED);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Report has been marked as resolved",
+        className: "bg-green-500 text-white border-green-600",
+        duration: 2000,
+      });
+      
+      // Refresh data to update UI
+      refetch();
+    } catch (error) {
+      console.error("Error resolving report:", error);
+      
+      toast({
+        title: "Error",
+        description: `Failed to resolve report: ${(error as Error)?.message || 'Unknown error'}`,
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+    } finally {
+      // Remove from processing state
+      setProcessingIds(prev => prev.filter(id => id !== reportId));
+    }
   };
 
   const handleRefresh = async () => {
@@ -434,8 +470,8 @@ export default function ManageReport() {
     const reasonMap: Record<ReasonReport, string> = {
       [ReasonReport.SPAM]: "Spam",
       [ReasonReport.HARASSMENT]: "Harassment",
-      [ReasonReport.COPYRIGHT]: "Hate Speech",
-      [ReasonReport.INAPPROPRIATE]: "Violence",
+      [ReasonReport.COPYRIGHT]: "Copyright",
+      [ReasonReport.INAPPROPRIATE]: "Inappropriate",
       [ReasonReport.Other]: "Other"
     };
     return reasonMap[reason] || reason;
