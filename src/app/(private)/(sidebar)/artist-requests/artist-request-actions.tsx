@@ -22,7 +22,6 @@ export function ArtistRequestActions({ request }: { request: ArtistRequest }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   const { execute, isPending } = useServerAction(deleteArtistRequestAction, {
     onSuccess() {
       setIsOpen(false);

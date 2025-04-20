@@ -30,11 +30,11 @@ async function ArtistRequestsTableContent({
   }
 
   console.log('Artist Requests Response:', response.data); // Debugging line
-  const { cccd, pagination } = response.data;
+  const { requests, pagination } = response.data;
   return (
     <DataTable
       columns={columns}
-      data={cccd}
+      data={requests}
       pagination={{
         pageIndex: pagination.page - 1,
         pageSize: pagination.limit,

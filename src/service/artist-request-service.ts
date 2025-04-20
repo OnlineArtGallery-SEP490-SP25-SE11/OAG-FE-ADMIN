@@ -1,6 +1,6 @@
 import { createApi } from "@/lib/axios";
 import { getCurrentUser } from "@/lib/session";
-import {  GetArtistRequestsResponse } from "@/types/artist-request";
+import { GetArtistRequestsResponse } from "@/types/artist-request";
 import { ApiResponse } from "@/types/response";
 import { handleApiError } from "@/utils/error-handler";
 import axiosInstance from 'axios';
@@ -26,12 +26,13 @@ export async function getArtistRequests({
     if (sort) queryParams.set('sort', JSON.stringify(sort));
     if (status) queryParams.append('status', status);
     if (search) queryParams.set('search', search);
+
     const user = await getCurrentUser();
     if (!user) {
       throw new Error("Authorization error");
     }
 
-    const url = `/cccd${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const url = `/artist-request${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     const res = await createApi(user.accessToken)(url);
     return res.data;
   } catch (error) {
@@ -48,33 +49,37 @@ export async function approveArtistRequest({
   requestId: string;
 }): Promise<ApiResponse<null>> {
   try {
-    const res = await createApi(accessToken).put(`/artist-requests/${requestId}/approve`);
+    const res = await createApi(accessToken).patch(`/artist-request/${requestId}/status`, {
+      status: "approved",
+    });
     return res.data;
   } catch (err) {
     if (axiosInstance.isAxiosError(err)) {
       console.error(`Error when approving artist request: ${err.response?.data.errorCode}`);
     }
-    throw err;
+    throw handleApiError(err, 'Error approving artist request');
   }
 }
 
 export async function rejectArtistRequest({
   accessToken,
   requestId,
-  reason
+  rejectionReason
 }: {
   accessToken: string;
   requestId: string;
-  reason: string;
+  rejectionReason: string;
 }): Promise<ApiResponse<null>> {
   try {
-    const res = await createApi(accessToken).put(`/artist-requests/${requestId}/reject`, { reason });
+    const res = await createApi(accessToken).patch(`/artist-request/${requestId}/status`, { rejectionReason, 
+      status: "rejected",
+     });
     return res.data;
   } catch (error) {
     if (axiosInstance.isAxiosError(error)) {
       console.error(`Error when rejecting artist request: ${error.response?.data.errorCode}`);
     }
-    throw error;
+    throw handleApiError(error, 'Error rejecting artist request');
   }
 }
 
@@ -82,9 +87,7 @@ export async function deleteArtistRequest(
   requestId: string
 ): Promise<ApiResponse<null>> {
   try {
-    const res = await createApi()(`/artist-requests/${requestId}`, {
-      method: 'DELETE',
-    });
+    const res = await createApi().delete(`/artist-request/${requestId}`);
     return res.data;
   } catch (error) {
     console.error("Error deleting artist request:", error);
