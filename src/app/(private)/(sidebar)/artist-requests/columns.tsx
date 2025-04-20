@@ -1,41 +1,69 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArtistRequest } from "@/types/artist-request";
+import { ArtistRequest, ArtistRequestStatus } from "@/types/artist-request";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ArtistRequestActions } from "./artist-request-actions";
 
 export const columns: ColumnDef<ArtistRequest>[] = [
   {
-    accessorKey: "user._id",
-    header: "User ID",
-    cell: ({ row }) => <span>{row.original.user._id}</span>,
+    accessorKey: "userId",
+    header: "User",
+    cell: ({ row }) => {
+      const user = row.original.userId;
+      return (
+        <div className="flex items-center justify-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user.image} alt={user.name} />
+            <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="font-medium">{user.name}</span>
+            <span className="text-sm text-muted-foreground">{user.email}</span>
+          </div>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "id",
-    header: "ID Number",
+    accessorKey: "cccd",
+    header: "ID Card",
+    cell: ({ row }) => {
+      const cccd = row.original.cccd;
+      if (!cccd) return null;
+      return (
+        <div className="space-y-2">
+          <p className="text-muted-foreground">{cccd.id}</p>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge
-        variant={
-          row.original.status === "APPROVED"
-            ? "destructive"
-            : row.original.status === "REJECTED"
-            ? "secondary"
-            : "default"
-        }
-      >
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.status;
+      return (
+        <Badge
+          variant={
+            status === ArtistRequestStatus.APPROVED
+              ? "default"
+              : status === ArtistRequestStatus.REJECTED
+                ? "destructive"
+                : "default"
+          }
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "reviewedBy",
+    header: "Reviewed By",
+    cell: ({ row }) => row.original.reviewedBy?.name || "-",
   },
   {
     accessorKey: "createdAt",

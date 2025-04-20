@@ -12,7 +12,6 @@ import Image from "next/image";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleContext } from "@/components/ui.custom/interactive-overlay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +29,7 @@ export function ApproveRequestForm({ request, setIsOpen }: { request: ArtistRequ
   const { setIsOpen: setIsOverlayOpen } = useContext(ToggleContext);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"approve" | "reject">("approve");
-
+  const cccd = request.cccd!;
   const approveForm = useForm<z.infer<typeof approveRequestSchema>>({
     resolver: zodResolver(approveRequestSchema),
     defaultValues: {},
@@ -93,137 +92,158 @@ export function ApproveRequestForm({ request, setIsOpen }: { request: ArtistRequ
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-1 py-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="space-y-4">
-          <div className="relative aspect-[3/2] rounded-md overflow-hidden">
-            <Image
-              src={request.imageFront}
-              alt="ID Front"
-              fill
-              className="object-cover"
-            />
-          </div>
-          <div className="relative aspect-[3/2] rounded-md overflow-hidden">
-            <Image
-              src={request.imageBack}
-              alt="ID Back"
-              fill
-              className="object-cover"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">{request.name}</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">ID Number</p>
-              <p className="font-medium">{request.id}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Date of Birth</p>
-              <p className="font-medium">{request.dob}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Nationality</p>
-              <p className="font-medium">{request.nationality}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Sex</p>
-              <p className="font-medium">{request.sex}</p>
-            </div>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Address</p>
-            <p className="font-medium">{request.address}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Features</p>
-            <p className="font-medium">{request.features}</p>
-          </div>
-        </div>
+    <div className="w-full p-4 space-y-6"> {/* Adjusted padding and spacing */}
+      {/* Header Section - Made more compact */}
+      <div className="border-b pb-3">
+        <h1 className="text-xl font-semibold">Artist Verification Request</h1> {/* Reduced text size */}
+        <p className="text-sm text-muted-foreground mt-1">Review application details and documents</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "approve" | "reject")} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="approve" className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
-            Approve
-          </TabsTrigger>
-          <TabsTrigger value="reject" className="flex items-center gap-2">
-            <XCircle className="w-4 h-4" />
-            Reject
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="approve" className="mt-0">
-          <Form {...approveForm}>
-            <form onSubmit={approveForm.handleSubmit(onApprove)} className="space-y-4">
-              <Separator className="my-6" />
-              {approveError && (
-                <Alert variant="destructive">
-                  <Terminal className="h-4 w-4" />
-                  <AlertTitle>Error approving request</AlertTitle>
-                  <AlertDescription>{approveError.message}</AlertDescription>
-                </Alert>
-              )}
-              <div className="flex justify-end pt-4">
-                <Button
-                  type="submit"
-                  disabled={isApprovePending}
-                  className="w-32"
-                  variant="default"
-                >
-                  {isApprovePending ? "Approving..." : "Approve"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </TabsContent>
-
-        <TabsContent value="reject" className="mt-0">
-          <Form {...rejectForm}>
-            <form onSubmit={rejectForm.handleSubmit(onReject)} className="space-y-4">
-              <FormField
-                control={rejectForm.control}
-                name="reason"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Reason for rejection</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter the reason for rejection"
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+      {/* Main Content - Changed to vertical layout for drawer */}
+      <div className="space-y-6"> {/* Removed grid, stack vertically */}
+        {/* Documents Section */}
+        <div className="space-y-4"> {/* Reduced spacing */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">ID Card - Front</h3>
+            <div className="relative aspect-[3/2] rounded-lg overflow-hidden border bg-muted/10 max-h-[200px]"> {/* Added max height */}
+              <Image
+                src={cccd.imageFront}
+                alt="ID Front"
+                fill
+                className="object-cover hover:scale-105 transition-transform duration-300"
               />
-              <Separator className="my-6" />
-              {rejectError && (
-                <Alert variant="destructive">
-                  <Terminal className="h-4 w-4" />
-                  <AlertTitle>Error rejecting request</AlertTitle>
-                  <AlertDescription>{rejectError.message}</AlertDescription>
-                </Alert>
-              )}
-              <div className="flex justify-end pt-4">
-                <Button
-                  type="submit"
-                  disabled={isRejectPending}
-                  className="w-32"
-                  variant="destructive"
-                >
-                  {isRejectPending ? "Rejecting..." : "Reject"}
-                </Button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-muted-foreground">ID Card - Back</h3>
+            <div className="relative aspect-[3/2] rounded-lg overflow-hidden border bg-muted/10 max-h-[200px]"> {/* Added max height */}
+              <Image
+                src={cccd.imageBack}
+                alt="ID Back"
+                fill
+                className="object-cover hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Information Section - Made more compact */}
+        <div className="space-y-4"> {/* Reduced spacing */}
+          <div className="bg-card rounded-lg p-4 border space-y-4"> {/* Reduced padding */}
+            <h2 className="text-lg font-semibold">{cccd.name}</h2>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm"> {/* Made text smaller */}
+              <div className="space-y-0.5">
+                <p className="font-medium text-muted-foreground">ID Number</p>
+                <p className="font-medium">{cccd.id}</p>
               </div>
-            </form>
-          </Form>
-        </TabsContent>
-      </Tabs>
+              <div className="space-y-0.5">
+                <p className="font-medium text-muted-foreground">Date of Birth</p>
+                <p className="font-medium">{cccd.dob}</p>
+              </div>
+              <div className="space-y-0.5">
+                <p className="font-medium text-muted-foreground">Nationality</p>
+                <p className="font-medium">{cccd.nationality}</p>
+              </div>
+              <div className="space-y-0.5">
+                <p className="font-medium text-muted-foreground">Sex</p>
+                <p className="font-medium">{cccd.sex}</p>
+              </div>
+            </div>
+
+            <div className="space-y-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Address</p>
+              <p className="font-medium">{cccd.address}</p>
+            </div>
+
+            <div className="space-y-0.5 text-sm">
+              <p className="font-medium text-muted-foreground">Features</p>
+              <p className="font-medium">{cccd.features}</p>
+            </div>
+          </div>
+
+          {/* Action Tabs - Made more compact */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "approve" | "reject")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-3">
+              <TabsTrigger value="approve" className="flex items-center gap-1 text-sm">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Approve
+              </TabsTrigger>
+              <TabsTrigger value="reject" className="flex items-center gap-1 text-sm">
+                <XCircle className="w-3.5 h-3.5" />
+                Reject
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="bg-card rounded-lg p-4 border"> {/* Reduced padding */}
+              <TabsContent value="approve" className="mt-0">
+                <Form {...approveForm}>
+                  <form onSubmit={approveForm.handleSubmit(onApprove)} className="space-y-4">
+                    {approveError && (
+                      <Alert variant="destructive">
+                        <Terminal className="h-4 w-4" />
+                        <AlertTitle>Error approving request</AlertTitle>
+                        <AlertDescription>{approveError.message}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        disabled={isApprovePending}
+                        className="w-full sm:w-32"
+                        variant="default"
+                      >
+                        {isApprovePending ? "Approving..." : "Approve"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </TabsContent>
+
+              <TabsContent value="reject" className="mt-0">
+                <Form {...rejectForm}>
+                  <form onSubmit={rejectForm.handleSubmit(onReject)} className="space-y-4">
+                    <FormField
+                      control={rejectForm.control}
+                      name="reason"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Reason for rejection</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Enter the reason for rejection"
+                              className="min-h-[100px] resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {rejectError && (
+                      <Alert variant="destructive">
+                        <Terminal className="h-4 w-4" />
+                        <AlertTitle>Error rejecting request</AlertTitle>
+                        <AlertDescription>{rejectError.message}</AlertDescription>
+                      </Alert>
+                    )}
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        disabled={isRejectPending}
+                        className="w-full sm:w-32"
+                        variant="destructive"
+                      >
+                        {isRejectPending ? "Rejecting..." : "Reject"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
+      </div>
     </div>
   );
 }
