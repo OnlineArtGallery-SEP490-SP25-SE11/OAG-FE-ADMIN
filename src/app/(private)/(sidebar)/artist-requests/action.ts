@@ -28,7 +28,7 @@ export const rejectArtistRequestAction = adminOnlyAction
     await rejectArtistRequest({
       accessToken: ctx.user.accessToken,
       requestId,
-      reason,
+      rejectionReason: reason,
     });
     revalidatePath("/artist-requests");
   });
