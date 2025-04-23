@@ -167,16 +167,16 @@ export interface Gallery {
 	modelRotation: Vec3;
 	modelScale: number;
 	previewImage: string;
-	planImage: string;
+	// planImage: string;
 	isPremium: boolean;
 	isActive: boolean;
-	artworkPlacements: {
-		position: Vec3;
-		rotation: Vec3;
-	}[];
+	artworkPlacements: ArtworkPlacement[];
 	customColliders: CustomCollider[];
 }
-
+export interface ArtworkPlacement {
+    position: Vec3;
+    rotation: Vec3;
+}
 export type CustomCollider = BoxColliderConfig | CurvedColliderConfig;
 
 export type GetGalleriesResponse = {

@@ -18,6 +18,7 @@ import ColliderEditor from './collider-editor';
 import ArtworkPositionEditor from './artwork-position-editor';
 import Image from 'next/image';
 import { CustomCollider } from '@/types/gallery';
+import { FloorPlanRenderer } from '@/components/gallery/floor-plan-renderer';
 
 // Types
 export interface GalleryTemplateData {
@@ -36,7 +37,7 @@ export interface GalleryTemplateData {
   modelRotation: [number, number, number];
   modelPosition: [number, number, number];
   previewImage: string;
-  planImage: string;
+  // planImage: string;
   isPremium: boolean;
   isActive: boolean;
   customColliders: CustomCollider[];
@@ -81,7 +82,7 @@ const defaultTemplate: GalleryTemplateData = {
   modelRotation: [0, 0, 0],
   modelPosition: [0, 0, 0],
   previewImage: '',
-  planImage: '',
+  // planImage: '',
   isPremium: false,
   isActive: true,
   customColliders: [],
@@ -199,18 +200,18 @@ export default function GalleryTemplateCreator({
     // toast.success('Preview image uploaded');
   };
 
-  const handleplanImageUpload = (files: File[]) => {
-    if (files.length === 0) return;
-    setIsLoading(true);
-  }
+  // const handleplanImageUpload = (files: File[]) => {
+  //   if (files.length === 0) return;
+  //   setIsLoading(true);
+  // }
 
-  const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
-    if (files.length > 0) {
-      updateTemplate({ planImage: files[0].url });
-    }
-    setIsLoading(false);
-    // toast.success('Plane image uploaded');
-  };
+  // const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
+  //   if (files.length > 0) {
+  //     updateTemplate({ planImage: files[0].url });
+  //   }
+  //   setIsLoading(false);
+  //   // toast.success('Plane image uploaded');
+  // };
 
   // Save template
   const saveTemplate = async () => {
@@ -326,14 +327,14 @@ export default function GalleryTemplateCreator({
               </div>
               <div className="space-y-2">
                 <Label>Floor Plane Image</Label>
-                <FileUploader
+                {/* <FileUploader
                   maxFiles={1}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                   multiple={false}
                   onFilesChange={handleplanImageUpload}
                   onFileUpload={handleplanImageUploadComplete}
-                />
-                {templateData.planImage && (
+                /> */}
+                {/* {templateData.planImage && (
                   <div className="mt-2 relative w-full aspect-[4/3] rounded-md overflow-hidden border">
                     <Image
                       width={400}
@@ -343,7 +344,21 @@ export default function GalleryTemplateCreator({
                       className="object-cover w-full h-full"
                     />
                   </div>
-                )}
+                )} */}
+                <Label>Floor Plane Image</Label>
+                <div className="mt-2 p-4 border rounded-md bg-white">
+                  <FloorPlanRenderer
+                    dimensions={templateData.dimensions}
+                    wallThickness={templateData.wallThickness}
+                    customColliders={templateData.customColliders}
+                    artworkPlacements={templateData.artworkPlacements}
+                    scale={8}
+                    className="mx-auto"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This floor plan is automatically generated based on your gallery dimensions, colliders, and artwork placements.
+                </p>
               </div>
 
               <div className="space-y-2">
