@@ -31,7 +31,7 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]).optional(),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
-  planImage: z.string().min(1, "Plane image is required"),
+  // planImage: z.string().min(1, "Plane image is required"),
   isPremium: z.boolean().default(false),
   customColliders: z.array(z.any()).optional(),
   artworkPlacements: z.array(
