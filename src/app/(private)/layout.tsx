@@ -10,6 +10,9 @@ export default async function PrivateLayout({
     if (!user || !user.role.includes("admin")) {
         return redirect('/auth');
     }
+    // if (!user || !user.role.includes("admin")) {
+    //     return redirect('/auth');
+    // }
     return (
         <>
             {children}
