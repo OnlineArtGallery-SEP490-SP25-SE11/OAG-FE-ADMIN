@@ -80,17 +80,27 @@ const authOptions: AuthOptions = {
 					tokenId: account.id_token
 				});
 			}
+
+			// Check authentication result
+			if (!result?.isAuthenticated) {
+				return false;
+			}
+
+			// Check if user has admin role
+			if (!result.result.role.includes('admin')) {
+				console.error('Access denied: User is not an admin');
+				return false; // This will prevent sign in
+			}
+
+			// Update user object with admin credentials
 			if (result?.result) {
 				user.id = result.result.id;
 				user.role = result.result.role;
 				user.accessToken = result.result.accessToken;
 				user.refreshToken = result.result.refreshToken;
-				// setCookies({
-				//   accessToken: result.result.accessToken,
-				//   refreshToken: result.result.refreshToken,
-				// });
 			}
-			return result?.isAuthenticated;
+
+			return true;
 		},
 		async jwt({ token, user, account }) {
 			if (account) {
@@ -122,7 +132,8 @@ const authOptions: AuthOptions = {
 	},
 	pages: {
 		signIn: '/auth/signin',
-		signOut: '/auth/signout'
+		signOut: '/auth/signout',
+		error: '/auth/error'
 	}
 };
 
