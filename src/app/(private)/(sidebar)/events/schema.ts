@@ -10,7 +10,7 @@ export const eventSchema = z.object({
   organizer: z.string().nonempty(),
   startDate: z.string().nonempty(),
   endDate: z.string().nonempty(),
-  link: z.string().url().nonempty(),
+  link: z.string().url().optional().or(z.literal(''))
 });
 
 export type EventForm = z.infer<typeof eventSchema>;
