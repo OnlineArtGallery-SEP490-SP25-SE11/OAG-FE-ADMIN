@@ -239,7 +239,7 @@ export const getArtworkColumns = ({
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        ${row.original.price.toFixed(2)}
+        {row.original.price.toFixed(2)} ₫
       </div>
     ),
   },

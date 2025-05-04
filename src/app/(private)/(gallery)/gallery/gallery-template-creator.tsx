@@ -306,7 +306,7 @@ export default function GalleryTemplateCreator({
               <div className="space-y-2">
                 <Label>Preview Image</Label>
                 <FileUploader
-                  maxFiles={10}
+                  maxFiles={1}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                   multiple={false}
                   onFilesChange={handlePreviewUpload}
