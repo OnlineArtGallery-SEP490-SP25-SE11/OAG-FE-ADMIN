@@ -61,6 +61,10 @@ import {
   Flag,
   FileText,
   ImageIcon,
+  Clock,
+  Shield,
+  UserX,
+  Calendar
 } from "lucide-react"
 import {
   useReactTable,
@@ -96,14 +100,18 @@ function BanConfirmationDialog({
     open,
     onOpenChange,
     onConfirm,
+    onTemporaryBan,
     report,
+    banType,
     isProcessing = false,
     getReasonLabel,
   }: {
     open: boolean
     onOpenChange: (open: boolean) => void
     onConfirm: () => void
+    onTemporaryBan: () => void
     report: Report | null
+    banType: 'permanent' | 'temporary'
     isProcessing?: boolean
     getReasonLabel: (reason: ReasonReport) => string
   }) {
@@ -117,15 +125,21 @@ function BanConfirmationDialog({
               transition={{ duration: 0.3 }}
               className="flex items-center justify-center"
             >
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <Ban className="h-6 w-6 text-red-600" />
+              <div className={`w-12 h-12 rounded-full ${banType === 'permanent' ? 'bg-red-100' : 'bg-orange-100'} flex items-center justify-center`}>
+                {banType === 'permanent' ? (
+                  <Ban className="h-6 w-6 text-red-600" />
+                ) : (
+                  <Clock className="h-6 w-6 text-orange-600" />
+                )}
               </div>
             </motion.div>
             <DialogTitle className="text-xl font-bold text-center text-gray-800">
-              Confirm Ban User
+              Confirm {banType === 'permanent' ? 'Permanent' : 'Temporary'} Ban
             </DialogTitle>
             <DialogDescription className="text-center text-gray-600 max-w-xs mx-auto">
-              Are you sure you want to permanently ban this user? This action cannot be undone.
+              {banType === 'permanent' 
+                ? 'Are you sure you want to permanently ban this user? This action cannot be undone.'
+                : 'Are you sure you want to temporarily ban this user for 30 days?'}
             </DialogDescription>
           </DialogHeader>
   
@@ -152,9 +166,9 @@ function BanConfirmationDialog({
               Cancel
             </Button>
             <Button
-              variant="destructive"
-              onClick={onConfirm}
-              className="w-full"
+              variant={banType === 'permanent' ? "destructive" : "default"}
+              onClick={banType === 'permanent' ? onConfirm : onTemporaryBan}
+              className={`w-full ${banType === 'temporary' ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`}
               disabled={isProcessing}
             >
               {isProcessing ? (
@@ -166,10 +180,12 @@ function BanConfirmationDialog({
                   >
                     <RefreshCw className="h-4 w-4" />
                   </motion.div>
-                  <span>Banning...</span>
+                  <span>Processing...</span>
                 </div>
+              ) : banType === 'permanent' ? (
+                "Permanently Ban User"
               ) : (
-                "Ban User"
+                "Ban for 30 Days"
               )}
             </Button>
           </DialogFooter>
@@ -186,6 +202,7 @@ export default function ManageReport() {
   const [selectedReason, setSelectedReason] = useState<string>("ALL_REASONS");
   const [showBanConfirm, setShowBanConfirm] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [banType, setBanType] = useState<'permanent' | 'temporary'>('permanent');
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
@@ -277,7 +294,7 @@ export default function ManageReport() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleBanClick = (report: Report) => {
+  const handleBanClick = (report: Report, type: 'permanent' | 'temporary' = 'permanent') => {
     if (!report._id) {
       console.error("Missing report ID for report:", report);
       toast({
@@ -290,6 +307,7 @@ export default function ManageReport() {
     }
     
     setSelectedReport(report);
+    setBanType(type);
     setShowBanConfirm(true);
   };
 
@@ -316,7 +334,7 @@ export default function ManageReport() {
       // Show success message
       toast({
         title: "Success",
-        description: "User has been banned successfully",
+        description: "User has been permanently banned",
         className: "bg-green-500 text-white border-green-600",
         duration: 2000,
       });
@@ -342,6 +360,55 @@ export default function ManageReport() {
     }
   };
 
+  const handleTemporaryBan = async () => {
+    if (!selectedReport || !selectedReport._id) {
+      toast({
+        title: "Error",
+        description: "Cannot ban user: Invalid report ID",
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+      return;
+    }
+    
+    try {
+      // Add this report ID to processing state
+      setProcessingIds(prev => [...prev, selectedReport._id]);
+      
+      console.log("Temporarily banning user with report ID:", selectedReport._id);
+      
+      // Call the API to temporarily ban based on report ID
+      const response = await reportService.temporaryBan(selectedReport._id);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "User has been temporarily banned for 30 days",
+        className: "bg-green-500 text-white border-green-600",
+        duration: 2000,
+      });
+      
+      // Close the dialog
+      setShowBanConfirm(false);
+      
+      // Refresh data to update UI
+      refetch();
+    } catch (error) {
+      console.error("Error temporarily banning user:", error);
+      
+      toast({
+        title: "Error",
+        description: `Failed to temporarily ban user: ${(error as Error)?.message || 'Unknown error'}`,
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+    } finally {
+      // Remove from processing state
+      setProcessingIds(prev => prev.filter(id => id !== selectedReport._id));
+      setSelectedReport(null);
+    }
+  };
+
   const clearFilters = () => {
     setSelectedStatus("ALL_STATUSES");
     setSelectedReason("ALL_REASONS");
@@ -349,12 +416,48 @@ export default function ManageReport() {
   };
 
   const handleResolve = async (reportId: string) => {
-    toast({
-      title: "Info",
-      description: "Resolve functionality not implemented yet",
-      className: "bg-blue-500 text-white border-blue-600",
-      duration: 2000,
-    });
+    if (!reportId) {
+      toast({
+        title: "Error",
+        description: "Cannot resolve report: Invalid report ID",
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+      return;
+    }
+    
+    try {
+      // Add this report ID to processing state
+      setProcessingIds(prev => [...prev, reportId]);
+      
+      console.log("Resolving report with ID:", reportId);
+      
+      // Call the API to update the report status to RESOLVED
+      const response = await reportService.updateStatus(reportId, ReportStatus.RESOLVED);
+      
+      // Show success message
+      toast({
+        title: "Success",
+        description: "Report has been marked as resolved",
+        className: "bg-green-500 text-white border-green-600",
+        duration: 2000,
+      });
+      
+      // Refresh data to update UI
+      refetch();
+    } catch (error) {
+      console.error("Error resolving report:", error);
+      
+      toast({
+        title: "Error",
+        description: `Failed to resolve report: ${(error as Error)?.message || 'Unknown error'}`,
+        className: "bg-red-500 text-white border-red-600",
+        duration: 2000,
+      });
+    } finally {
+      // Remove from processing state
+      setProcessingIds(prev => prev.filter(id => id !== reportId));
+    }
   };
 
   const handleRefresh = async () => {
@@ -367,8 +470,8 @@ export default function ManageReport() {
     const reasonMap: Record<ReasonReport, string> = {
       [ReasonReport.SPAM]: "Spam",
       [ReasonReport.HARASSMENT]: "Harassment",
-      [ReasonReport.COPYRIGHT]: "Hate Speech",
-      [ReasonReport.INAPPROPRIATE]: "Violence",
+      [ReasonReport.COPYRIGHT]: "Copyright",
+      [ReasonReport.INAPPROPRIATE]: "Inappropriate",
       [ReasonReport.Other]: "Other"
     };
     return reasonMap[reason] || reason;
@@ -471,23 +574,43 @@ export default function ManageReport() {
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="hover:bg-gray-100 p-0 h-auto font-medium"
         >
+          <Shield className="mr-1 h-4 w-4 text-blue-500" />
           <span className="font-medium">Status</span>
           <ArrowUpDown className="ml-1 h-3 w-3 text-gray-400" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <Badge
-          className={`${
-            row.original.status === ReportStatus.PENDING
-              ? "bg-yellow-100 text-yellow-800"
-              : row.original.status === ReportStatus.RESOLVED
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-          }`}
-        >
-          {row.original.status}
-        </Badge>
-      ),
+      cell: ({ row }) => {
+        let badgeClass = "";
+        let icon = null;
+        
+        switch (row.original.status) {
+          case ReportStatus.PENDING:
+            badgeClass = "bg-yellow-100 text-yellow-800 border-yellow-200";
+            icon = <AlertTriangle className="mr-1 h-3.5 w-3.5" />;
+            break;
+          case ReportStatus.RESOLVED:
+            badgeClass = "bg-green-100 text-green-800 border-green-200";
+            icon = <CheckCircle className="mr-1 h-3.5 w-3.5" />;
+            break;
+          // case ReportStatus.BANNED:
+          //   badgeClass = "bg-red-100 text-red-800 border-red-200";
+          //   icon = <UserX className="mr-1 h-3.5 w-3.5" />;
+          //   break;
+          // case ReportStatus.TEMP_BANNED:
+          //   badgeClass = "bg-orange-100 text-orange-800 border-orange-200";
+          //   icon = <Clock className="mr-1 h-3.5 w-3.5" />;
+          //   break;
+          default:
+            badgeClass = "bg-gray-100 text-gray-800";
+        }
+        
+        return (
+          <Badge className={`flex items-center ${badgeClass}`}>
+            {icon}
+            {row.original.status}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "url",
@@ -547,15 +670,22 @@ export default function ManageReport() {
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => handleBanClick(row.original)}
+              onClick={() => handleBanClick(row.original, 'permanent')}
               disabled={row.original.status === ReportStatus.RESOLVED || processingIds.includes(row.original._id)}
               className={row.original.status === ReportStatus.RESOLVED ? "text-gray-400" : "text-red-600 hover:text-red-800 hover:bg-red-50"}
             >
-              <Ban className="mr-2 h-4 w-4" /> Ban User
+              <Ban className="mr-2 h-4 w-4" /> Permanent Ban
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleBanClick(row.original, 'temporary')}
+              disabled={row.original.status === ReportStatus.RESOLVED || processingIds.includes(row.original._id)}
+              className={row.original.status === ReportStatus.RESOLVED ? "text-gray-400" : "text-orange-600 hover:text-orange-800 hover:bg-orange-50"}
+            >
+              <Clock className="mr-2 h-4 w-4" /> Ban for 30 Days
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => handleResolve(row.original._id)}
@@ -869,7 +999,9 @@ export default function ManageReport() {
         open={showBanConfirm}
         onOpenChange={setShowBanConfirm}
         onConfirm={handleBan}
+        onTemporaryBan={handleTemporaryBan}
         report={selectedReport}
+        banType={banType}
         isProcessing={processingIds.includes(selectedReport?._id || '')}
         getReasonLabel={getReasonLabel}
       />

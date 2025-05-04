@@ -61,7 +61,7 @@ export async function BlogsTable({
 }) {
   // Parse and validate search params
   const page = Number(searchParams?.page) || 1;
-  const limit = Number(searchParams?.limit) || 10;
+  const limit = Number(searchParams?.limit) || 5;
   
   // Parse sort parameters
   const sortField = searchParams?.sortField || 'createdAt';
@@ -80,7 +80,7 @@ export async function BlogsTable({
       <Suspense key={`${page}-${limit}-${sortField}-${sortOrder}-${status}-${search}`} fallback={<TableSkeleton />}>
         <BlogsTableContent 
           page={page} 
-          limit={1} 
+          limit={limit} 
           sort={sort}
           status={status}
           search={search}

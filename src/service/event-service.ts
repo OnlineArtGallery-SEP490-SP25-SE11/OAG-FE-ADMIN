@@ -3,6 +3,7 @@ import { ApiResponse } from "@/types/response";
 import axiosInstance from "axios";
 import { createAxiosInstance } from '@/lib/axios';
 import { EventStatus } from "@/utils/enums";
+import { BaseNextResponse } from "next/dist/server/base-http";
 
 export interface Event {
   title: string;
@@ -11,6 +12,7 @@ export interface Event {
   type: string;
   status: EventStatus.UPCOMING;
   organizer: string;
+  link: string;
   startDate: string;
   endDate: string;
 }
@@ -25,7 +27,23 @@ export interface EventUpdate {
   startDate: string;
   endDate: string;
 }
-
+export interface EventDetail {
+  _id: string;
+  image: string;
+  title: string;
+  description: string;
+  type: string;
+  startDate: string;
+  endDate: string;
+  status: EventStatus;
+  organizer: string;
+  userId: string;
+  link: string;
+  participants: any[]; // Use a more specific type if you know the structure
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
 const eventService = {
   async get(){
     try{
@@ -70,7 +88,7 @@ const eventService = {
       return null;
     }
   },
-  async getById(id: string) {
+  async getById(id: string): Promise<ApiResponse<EventDetail> | null> {
     try {
       const axios = await createAxiosInstance({ useToken: true })
       if (!axios) {

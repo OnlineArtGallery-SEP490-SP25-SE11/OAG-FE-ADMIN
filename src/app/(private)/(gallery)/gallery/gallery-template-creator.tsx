@@ -12,12 +12,13 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import FileUploader from '@/components/ui.custom/file-uploader';
 import { Card, CardContent } from '@/components/ui/card';
-import { ColliderConfig } from '@/types/gallery';
 import GalleryPreview from './gallery-preview';
 import ColliderEditor from './collider-editor';
 // import Image from 'next/image';
 import ArtworkPositionEditor from './artwork-position-editor';
 import Image from 'next/image';
+import { CustomCollider } from '@/types/gallery';
+import { FloorPlanRenderer } from '@/components/gallery/floor-plan-renderer';
 
 // Types
 export interface GalleryTemplateData {
@@ -36,9 +37,10 @@ export interface GalleryTemplateData {
   modelRotation: [number, number, number];
   modelPosition: [number, number, number];
   previewImage: string;
-  planImage: string;
+  // planImage: string;
   isPremium: boolean;
-  customColliders: ColliderConfig[];
+  isActive: boolean;
+  customColliders: CustomCollider[];
   // Add artwork positions configuration
   artworkPlacements: {
     position: [number, number, number];
@@ -59,8 +61,8 @@ interface GalleryTemplateCreatorProps {
 interface GalleryTemplateContextType {
   templateData: GalleryTemplateData;
   updateTemplate: (data: Partial<GalleryTemplateData>) => void;
-  addCollider: (collider: ColliderConfig) => void;
-  updateCollider: (index: number, collider: Partial<ColliderConfig>) => void;
+  addCollider: (collider: CustomCollider) => void;
+  updateCollider: (index: number, collider: Partial<CustomCollider>) => void;
   removeCollider: (index: number) => void;
   isLoading: boolean;
 }
@@ -80,8 +82,9 @@ const defaultTemplate: GalleryTemplateData = {
   modelRotation: [0, 0, 0],
   modelPosition: [0, 0, 0],
   previewImage: '',
-  planImage: '',
+  // planImage: '',
   isPremium: false,
+  isActive: true,
   customColliders: [],
   // Default artwork positions
   artworkPlacements: []
@@ -127,14 +130,14 @@ export default function GalleryTemplateCreator({
   }, [templateData, onUpdate]);
 
   // Collider management functions
-  const addCollider = (collider: ColliderConfig) => {
+  const addCollider = (collider: CustomCollider) => {
     setTemplateData(prev => ({
       ...prev,
       customColliders: [...prev.customColliders, collider]
     }));
   };
 
-  const updateCollider = (index: number, collider: Partial<ColliderConfig>) => {
+  const updateCollider = (index: number, collider: Partial<CustomCollider>) => {
     setTemplateData(prev => {
       const updatedColliders = [...prev.customColliders];
 
@@ -145,7 +148,7 @@ export default function GalleryTemplateCreator({
         ...collider,
         // Preserve the original shape to avoid type conflicts
         shape: collider.shape || currentCollider.shape
-      } as ColliderConfig;
+      } as CustomCollider;
 
       updatedColliders[index] = updatedCollider;
 
@@ -197,18 +200,18 @@ export default function GalleryTemplateCreator({
     // toast.success('Preview image uploaded');
   };
 
-  const handleplanImageUpload = (files: File[]) => {
-    if (files.length === 0) return;
-    setIsLoading(true);
-  }
+  // const handleplanImageUpload = (files: File[]) => {
+  //   if (files.length === 0) return;
+  //   setIsLoading(true);
+  // }
 
-  const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
-    if (files.length > 0) {
-      updateTemplate({ planImage: files[0].url });
-    }
-    setIsLoading(false);
-    // toast.success('Plane image uploaded');
-  };
+  // const handleplanImageUploadComplete = (files: { url: string; width?: number; height?: number; _id?: string }[]) => {
+  //   if (files.length > 0) {
+  //     updateTemplate({ planImage: files[0].url });
+  //   }
+  //   setIsLoading(false);
+  //   // toast.success('Plane image uploaded');
+  // };
 
   // Save template
   const saveTemplate = async () => {
@@ -324,14 +327,14 @@ export default function GalleryTemplateCreator({
               </div>
               <div className="space-y-2">
                 <Label>Floor Plane Image</Label>
-                <FileUploader
+                {/* <FileUploader
                   maxFiles={1}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.webp'] }}
                   multiple={false}
                   onFilesChange={handleplanImageUpload}
                   onFileUpload={handleplanImageUploadComplete}
-                />
-                {templateData.planImage && (
+                /> */}
+                {/* {templateData.planImage && (
                   <div className="mt-2 relative w-full aspect-[4/3] rounded-md overflow-hidden border">
                     <Image
                       width={400}
@@ -341,7 +344,21 @@ export default function GalleryTemplateCreator({
                       className="object-cover w-full h-full"
                     />
                   </div>
-                )}
+                )} */}
+                <Label>Floor Plane Image</Label>
+                <div className="mt-2 p-4 border rounded-md bg-white">
+                  <FloorPlanRenderer
+                    dimensions={templateData.dimensions}
+                    wallThickness={templateData.wallThickness}
+                    customColliders={templateData.customColliders}
+                    artworkPlacements={templateData.artworkPlacements}
+                    scale={8}
+                    className="mx-auto"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This floor plan is automatically generated based on your gallery dimensions, colliders, and artwork placements.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -434,6 +451,8 @@ export default function GalleryTemplateCreator({
               <div className="space-y-2">
                 <Label>3D Model (.glb)</Label>
                 <FileUploader
+                  maxFiles={1}
+                  maxSize={10 * 1024 * 1024} // 10 MB
                   accept={{ 'model/gltf-binary': ['.glb'] }}
                   multiple={false}
                   onFilesChange={handleModelUpload}

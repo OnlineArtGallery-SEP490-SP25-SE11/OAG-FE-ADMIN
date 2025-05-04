@@ -30,7 +30,7 @@ export function TableSkeleton() {
             key={`row-${rowIndex}`}
             className="flex border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
-            {[...Array(5)].map((_, cellIndex) => (
+            {[...Array(6)].map((_, cellIndex) => (
               <div key={`cell-${rowIndex}-${cellIndex}`} className="flex-1 p-2">
                 <Skeleton className="h-4 w-full" />
               </div>

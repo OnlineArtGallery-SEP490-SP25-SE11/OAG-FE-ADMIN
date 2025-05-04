@@ -15,7 +15,7 @@ export async function getTags(): Promise<ApiResponse<BlogTagResponse>> {
 
   } catch (error) {
     console.error(`Error getting blog tags:`, error);
-    return handleApiError<BlogTagResponse>(
+    throw handleApiError<BlogTagResponse>(
       error,
       'Failed to fetch blog tags'
     );

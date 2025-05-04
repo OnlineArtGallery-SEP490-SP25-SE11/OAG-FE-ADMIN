@@ -12,7 +12,8 @@ export default async function EditGalleryTemplatePage({
 }) {
   // Fetch template data on the server
   const res = await getGalleryTemplate(params.id);
-  const templateData = res.data;
+  const templateResponse = res.data;
+  const templateData = templateResponse?.gallery;
   if (!templateData) {
     return notFound();
   } 

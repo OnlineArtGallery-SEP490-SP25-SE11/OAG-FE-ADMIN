@@ -1,13 +1,95 @@
-'use client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TopArtworks } from './components/top-artworks';
-import { RecentSales } from './components/recent-sales';
-import TabChart from './components/tab-chart';
-import { vietnamCurrency } from '@/utils';
+"use client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TopArtworks } from "./components/top-artworks";
+import { RecentSales } from "./components/recent-sales";
+import TabChart from "./components/tab-chart";
+import { vietnamCurrency } from "@/utils";
+import { useEffect, useState } from "react";
+import {
+  getAllUser,
+  getAllArtwork,
+  getAllGallery,
+  getAllTransaction,
+} from "@/service/analytics-service";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export default function AnalyticsPage() {
-  // Sample data - replace with real data from your API
+  const [artistCount, setArtistCount] = useState(0);
+  const [artworkCount, setArtworkCount] = useState(0);
+  const [galleryCount, setGalleryCount] = useState(0);
+  const [commissionTotal, setCommissionTotal] = useState(0);
+  const [transactionCount, setTransactionCount] = useState(0);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [
+          userRes,
+          artworkRes,
+          galleryRes,
+          transactionRes,
+        ] = await Promise.all([
+          getAllUser(),
+          getAllArtwork(),
+          getAllGallery(),
+          getAllTransaction(),
+        ]);
+
+        // Đếm nghệ sĩ
+        if (userRes?.data) {
+          const artists = userRes.data.filter(
+            (user: any) => user.role.includes("artist") && !user.isBanned
+          );
+          setArtistCount(artists.length);
+        }
+
+        // Đếm artwork
+        if (artworkRes?.data?.artworks) {
+          setArtworkCount(artworkRes.data.artworks.length);
+        }
+
+        // Đếm gallery
+        if (galleryRes?.data?.pagination?.total !== undefined) {
+          setGalleryCount(galleryRes.data.pagination.total);
+        }
+
+        // Tính COMMISSION
+        if (transactionRes?.data) {
+          const commissionTransactions = transactionRes.data.filter(
+            (tx: any) => tx.type === "COMMISSION"
+          );
+
+          const total = commissionTransactions.reduce(
+            (sum: number, tx: any) => sum + tx.amount,
+            0
+          );
+
+          setCommissionTotal(parseFloat(total.toFixed(2)));
+          setTransactionCount(commissionTransactions.length);
+        }
+      } catch (err) {
+        console.error("Error loading analytics:", err);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const artistMetrics = [
+    { month: "Jan", newArtists: 45, activeArtists: 120, totalArtworks: 350 },
+    { month: "Feb", newArtists: 52, activeArtists: 145, totalArtworks: 425 },
+    { month: "Mar", newArtists: 60, activeArtists: 160, totalArtworks: 500 },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -19,55 +101,7 @@ export default function AnalyticsPage() {
           Detailed insights and performance metrics
         </p>
       </header>
-
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <MetricCard
-          title="Total Revenue"
-          value={vietnamCurrency(4523000)}
-          description="+20.1% from last month"
-          trend="up"
-        />
-        <MetricCard
-          title="Active Artists"
-          value="234"
-          description="+15% from last month"
-          trend="up"
-        />
-        <MetricCard
-          title="Total Artworks"
-          value="1,892"
-          description="+32 new this month"
-          trend="up"
-        />
-        <MetricCard
-          title="Active Galleries"
-          value="156"
-          description="+8 from last month"
-          trend="up"
-        />
-      </div>
       <TabChart />
-
-      {/* Bottom Section */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Performing Artworks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TopArtworks />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RecentSales />
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
@@ -76,7 +110,7 @@ interface MetricCardProps {
   title: string;
   value: string;
   description: string;
-  trend: 'up' | 'down';
+  trend: "up" | "down";
 }
 
 function MetricCard({ title, value, description, trend }: MetricCardProps) {
@@ -87,7 +121,11 @@ function MetricCard({ title, value, description, trend }: MetricCardProps) {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        <p className={`text-xs ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+        <p
+          className={`text-xs ${
+            trend === "up" ? "text-green-500" : "text-red-500"
+          }`}
+        >
           {description}
         </p>
       </CardContent>

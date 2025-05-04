@@ -51,8 +51,9 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]),
   previewImage: z.string().min(1, "Preview image is required"),
-  planImage: z.string().min(1, "Plane image is required"),
+  // planImage: z.string().min(1, "Plane image is required"),
   isPremium: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   customColliders: z.array(customColliderSchema).optional(),
   artworkPlacements: z.array(
     z.object({
@@ -71,11 +72,9 @@ export const createGalleryTemplateAction = adminOnlyAction
       customColliders: input.customColliders || [],
       artworkPlacements: input.artworkPlacements || [],
      };
-
-     console.log('Saving gallery template2:', templateData);
-
     
     const res = await createGalleryTemplate(user.accessToken, templateData);
+    revalidatePath(`/gallery`);
     return res.data;
   });
 

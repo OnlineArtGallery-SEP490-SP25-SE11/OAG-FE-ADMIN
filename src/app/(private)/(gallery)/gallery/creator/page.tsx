@@ -31,8 +31,9 @@ const galleryTemplateSchema = z.object({
   modelRotation: z.tuple([z.number(), z.number(), z.number()]).optional(),
   modelPosition: z.tuple([z.number(), z.number(), z.number()]).optional(),
   previewImage: z.string().min(1, "Preview image is required"),
-  planImage: z.string().min(1, "Plane image is required"),
-  isPrenium: z.boolean().default(false),
+  // planImage: z.string().min(1, "Plane image is required"),
+  isPremium: z.boolean().default(false),
+  isActive: z.boolean().default(true),
   customColliders: z.array(z.any()).optional(),
   artworkPlacements: z.array(
     z.object({
@@ -71,7 +72,7 @@ export default function GalleryCreatorPage() {
       }, 1000);
     }
   });
-  
+
   // Function to validate template using Zod
   const validateTemplate = useCallback((templateData: GalleryTemplateData) => {
     try {
@@ -81,15 +82,15 @@ export default function GalleryCreatorPage() {
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};
-        
+
         // Convert Zod errors to a readable format
         error.errors.forEach((err) => {
           const path = err.path.join('.');
           errors[path] = err.message;
         });
-        
+
         setValidationErrors(errors);
-        
+
         // Show toast with the first error message
         const firstError = error.errors[0];
         toast({
@@ -101,19 +102,19 @@ export default function GalleryCreatorPage() {
       return false;
     }
   }, []);
-  
+
   // Handler for saving the template
   const handleSaveTemplate = async (templateData: GalleryTemplateData) => {
     const finalTemplateData = { ...templateData };
     setEditedTemplate(finalTemplateData); // Update edited template for preview
-    
+
     // Validate template data before saving
     if (!validateTemplate(finalTemplateData)) {
       console.log('Validation failed:', validationErrors);
       setActiveView('edit'); // Switch to edit view to see errors
       return;
     }
-    
+
     console.log('Saving gallery template1:', finalTemplateData);
     await execute(finalTemplateData);
   };
@@ -128,10 +129,10 @@ export default function GalleryCreatorPage() {
   // Safe handler for view changes that ensures pointer lock is released
   const handleViewChange = (value: string) => {
     if (value === activeView) return;
-    
+
     // Set transitioning state to disable active features in components
     setIsTransitioning(true);
-    
+
     // Make sure pointer lock is released
     if (document.pointerLockElement) {
       try {
@@ -140,18 +141,18 @@ export default function GalleryCreatorPage() {
         console.error("Failed to exit pointer lock:", error);
       }
     }
-    
+
     // Delay the view change slightly to allow pointer lock to be released
     setTimeout(() => {
       setActiveView(value as 'edit' | 'preview');
-      
+
       // Reset transitioning state after a short delay to allow components to adjust
       setTimeout(() => {
         setIsTransitioning(false);
       }, 100);
     }, 50);
   };
-  
+
   // Effect to handle cleanup of pointer lock when component unmounts
   useEffect(() => {
     return () => {
@@ -164,7 +165,7 @@ export default function GalleryCreatorPage() {
       }
     };
   }, []);
-  
+
   return (
     <div className="flex flex-col h-screen">
       {/* Header bar with navigation and actions */}
@@ -176,10 +177,10 @@ export default function GalleryCreatorPage() {
             </Button>
             <h1 className="text-xl font-semibold">Create Gallery Template</h1>
           </div>
-          
+
           <div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => router.push(`/exhibitions/gallery`)}
             >
               Cancel
@@ -187,11 +188,11 @@ export default function GalleryCreatorPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Main content with Tabs */}
       <div className="flex-1 overflow-hidden">
-        <Tabs 
-          value={activeView} 
+        <Tabs
+          value={activeView}
           onValueChange={handleViewChange}
           className="h-full flex flex-col"
         >
@@ -206,21 +207,21 @@ export default function GalleryCreatorPage() {
             <Suspense fallback={<div className="h-full flex items-center justify-center"><Loader /></div>}>
               <TabsContent value="edit" className="mt-0 h-full">
                 <div className="h-full py-6">
-                  <GalleryTemplateCreator 
+                  <GalleryTemplateCreator
                     onSave={handleSaveTemplate}
-                    onUpdate={handleTemplateUpdate} 
-                    initialData={savedTemplate || undefined}
+                    onUpdate={handleTemplateUpdate}
+                    initialData={editedTemplate || savedTemplate || undefined}
                     isSaving={isPending}
                     validationErrors={validationErrors}
                   />
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="preview" className="mt-0 h-full">
                 <div className="h-full bg-gray-900">
                   {editedTemplate ? (
-                    <PreviewMode 
-                      templateData={editedTemplate} 
+                    <PreviewMode
+                      templateData={editedTemplate}
                       isActive={activeView === 'preview' && !isTransitioning}
                     />
                   ) : (

@@ -220,7 +220,7 @@ export async function createGalleryTemplate(accessToken: string, templateData: G
         return res.data;
     } catch (error) {
         console.error('Error creating gallery template:', error);
-        return handleApiError<GalleryRequestResponse>(
+        throw handleApiError<GalleryRequestResponse>(
             error,
             'Failed to create gallery template'
         );
@@ -236,9 +236,22 @@ export async function saveGalleryTemplate(accessToken: string, templateData: Gal
 
     catch (error) {
         console.error('Error saving gallery template:', error);
-        return handleApiError<GalleryRequestResponse>(
+        throw handleApiError<GalleryRequestResponse>(
             error,
             'Failed to save gallery template'
+        );
+    }
+}
+
+export async function updateGalleryStatus(accessToken: string, id: string, status: boolean): Promise<ApiResponse<void>> {
+    try {
+        const res = await createApi(accessToken).patch(`/gallery/${id}`, { isActive: status });
+        return res.data;
+    } catch (error) {
+        console.error('Error updating gallery status:', error);
+        throw handleApiError<void>(
+            error,
+            'Failed to update gallery status'
         );
     }
 }
@@ -262,7 +275,7 @@ export async function getGalleryTemplates(params?: {
         return res.data;
     } catch (error) {
         console.error('Error getting gallery templates:', error);
-        return handleApiError<GetGalleriesResponse>(
+        throw handleApiError<GetGalleriesResponse>(
             error,
             'Failed to fetch gallery templates'
         );
@@ -270,13 +283,13 @@ export async function getGalleryTemplates(params?: {
 }
 
 // Function to get a single gallery template by ID
-export async function getGalleryTemplate(id: string): Promise<ApiResponse<GalleryTemplateData>> {
+export async function getGalleryTemplate(id: string): Promise<ApiResponse<GalleryRequestResponse>> {
     try {
         const res = await createApi().get(`/gallery/${id}`);
         return res.data;
     } catch (error) {
         console.error(`Error getting gallery template ${id}:`, error);
-        return handleApiError<GalleryTemplateData>(
+        throw handleApiError<GalleryRequestResponse>(
             error,
             'Failed to fetch gallery template'
         );
@@ -290,7 +303,7 @@ export async function deleteGalleryTemplate(accessToken: string, id: string): Pr
         return res.data;
     } catch (error) {
         console.error('Error deleting gallery template:', error);
-        return handleApiError<void>(
+        throw handleApiError<void>(
             error,
             'Failed to delete gallery template'
         );
