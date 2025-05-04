@@ -91,38 +91,6 @@ export default function AnalyticsPage() {
     { month: "Mar", newArtists: 60, activeArtists: 160, totalArtworks: 500 },
   ];
 
-  const exhibitionMetrics = [
-    {
-      month: "Jan",
-      exhibition: "Modern Showcase",
-      visitors: 12500,
-      avgDuration: 45,
-      rating: 4.8,
-    },
-    {
-      month: "Feb",
-      exhibition: "Digital Festival",
-      visitors: 8900,
-      avgDuration: 38,
-      rating: 4.6,
-    },
-    {
-      month: "Mar",
-      exhibition: "Contemporary Masters",
-      visitors: 15600,
-      avgDuration: 52,
-      rating: 4.9,
-    },
-  ];
-
-  const recentActivities = [
-    { id: 1, activity: "Artwork Upload", time: "5 minutes ago" },
-    { id: 2, activity: "New Comment", time: "15 minutes ago" },
-    { id: 3, activity: "Collection Created", time: "30 minutes ago" },
-    { id: 4, activity: "Gallery Visit", time: "45 minutes ago" },
-    { id: 5, activity: "Artwork Purchase", time: "1 hour ago" },
-  ];
-
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-8">
@@ -136,7 +104,7 @@ export default function AnalyticsPage() {
       <TabChart />
 
       {/* Bottom Section */}
-      <div className="grid gap-6 md:grid-cols-2">
+      {/* <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Top Performing Artworks</CardTitle>
@@ -151,8 +119,6 @@ export default function AnalyticsPage() {
               <Line type="monotone" dataKey="newArtists" stroke="#8884d8" />
               <Line type="monotone" dataKey="activeArtists" stroke="#82ca9d" />
             </LineChart>
-
-            {/* <TopArtworks /> */}
           </CardContent>
         </Card>
         <Card>
@@ -163,7 +129,7 @@ export default function AnalyticsPage() {
             <RecentSales />
           </CardContent>
         </Card>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -14,7 +14,11 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { getAllUser, getAllArtwork } from "@/service/analytics-service";
+import {
+  getAllUser,
+  getAllArtwork,
+  getAllExhibitiion,
+} from "@/service/analytics-service";
 import { TopArtworks } from "./top-artworks";
 
 interface Artist {
@@ -31,12 +35,22 @@ export default function TabChart() {
   const [sortMetric, setSortMetric] = useState<"followers" | "artworks">(
     "followers"
   );
+  const [exhibitions, setExhibitions] = useState<any[]>([]);
 
-  const artistMetrics = [
-    { month: "Jan", newArtists: 45, activeArtists: 120, totalArtworks: 350 },
-    { month: "Feb", newArtists: 52, activeArtists: 145, totalArtworks: 425 },
-    { month: "Mar", newArtists: 60, activeArtists: 160, totalArtworks: 500 },
-  ];
+  useEffect(() => {
+    async function fetchExhibitions() {
+      try {
+        const res = await getAllExhibitiion();
+        if (res?.data?.exhibitions) {
+          setExhibitions(res.data.exhibitions);
+        }
+      } catch (error) {
+        console.error("Error fetching exhibitions:", error);
+      }
+    }
+
+    fetchExhibitions();
+  }, []);
 
   const exhibitionMetrics = [
     {
@@ -123,7 +137,6 @@ export default function TabChart() {
       <TabsList>
         <TabsTrigger value="artists">Artist Analytics</TabsTrigger>
         <TabsTrigger value="exhibitions">Exhibition Analytics</TabsTrigger>
-        <TabsTrigger value="engagement">User Engagement</TabsTrigger>
       </TabsList>
 
       <TabsContent value="artists">
@@ -135,10 +148,8 @@ export default function TabChart() {
             </CardContent>
           </Card>
 
-          {/* Top Artists Card */}
           <Card>
             <CardHeader></CardHeader>
-            {/* Filter Dropdown */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-xl font-semibold mx-6">Top Artist</p>
               <div className="flex items-center space-x-4 mx-6">
@@ -172,9 +183,6 @@ export default function TabChart() {
                       />
                       <div>
                         <div className="font-medium">{artist.name}</div>
-                        {/* <div className="text-sm text-gray-500">
-                          {artist.followers.length} followers
-                        </div> */}
                       </div>
                     </div>
                     <div className="text-right text-sm">
@@ -195,7 +203,6 @@ export default function TabChart() {
 
       <TabsContent value="exhibitions">
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Exhibition Visitors Chart */}
           <Card>
             <CardHeader>
               <CardTitle>Most Visited Exhibitions</CardTitle>
@@ -212,85 +219,36 @@ export default function TabChart() {
             </CardContent>
           </Card>
 
-          {/* Exhibition Statistics */}
           <Card>
             <CardHeader>
               <CardTitle>Exhibition Details</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {exhibitionMetrics.map((metric) => (
-                  <div key={metric.month} className="space-y-2">
+                {exhibitions.map((exhibition) => (
+                  <div key={exhibition._id} className="space-y-2">
                     <div className="font-medium text-lg">
-                      {metric.exhibition}
+                      {exhibition.contents?.[0]?.name || "Untitled"}
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
                         <div className="text-gray-500">Visitors</div>
                         <div className="font-medium">
-                          {metric.visitors.toLocaleString()}
+                          {exhibition.result?.visits ?? 0}
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500">Avg. Duration</div>
+                        <div className="text-gray-500">Total Time</div>
                         <div className="font-medium">
-                          {metric.avgDuration} mins
+                          {Math.round((exhibition.result?.totalTime ?? 0) / 60)}{" "}
+                          mins
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500">Rating</div>
+                        <div className="text-gray-500">Likes</div>
                         <div className="font-medium text-yellow-500">
-                          ★ {metric.rating}
+                          ★ {exhibition.result?.likes?.length ?? 0}
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </TabsContent>
-
-      <TabsContent value="engagement">
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* User Engagement Metrics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>User Engagement</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Artwork Interactions</span>
-                  <span className="font-medium">2,453 today</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Comments Posted</span>
-                  <span className="font-medium">342 today</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>New Collections Created</span>
-                  <span className="font-medium">89 today</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* User Activity Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-4">
-                    <div className="w-2 h-2 mt-2 rounded-full bg-blue-500" />
-                    <div>
-                      <div className="font-medium">{activity.activity}</div>
-                      <div className="text-sm text-gray-500">
-                        {activity.time}
                       </div>
                     </div>
                   </div>

@@ -64,9 +64,9 @@ export async function getAllExhibitiion() {
             throw new Error('Failed to create axios instance');
         }
         const res = await axios.get('/exhibition/user-exhibitions');
-        return res.data;
+        return res.data.data.exhibitions; 
     } catch (error) {
-        console.error('Error getting all users:', error);
+        console.error('Error getting all exhibitions:', error);
         return null;
     }
-};
+}
