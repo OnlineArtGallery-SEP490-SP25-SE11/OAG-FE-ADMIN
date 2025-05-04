@@ -1,4 +1,6 @@
-import { createAxiosInstance } from '@/lib/axios';
+import { createApi, createAxiosInstance } from '@/lib/axios';
+import { ApiResponse } from '@/types/response';
+import { handleApiError } from '@/utils/error-handler';
 
 
 export async function getAllUser() {
@@ -57,16 +59,15 @@ export async function getAllTransaction() {
     }
 };
 
-export async function getAllExhibitiion() {
+export const getExhibitions = async (accessToken: string): Promise<ApiResponse<any>> => {
     try {
-        const axios = await createAxiosInstance({ useToken: true });
-        if (!axios) {
-            throw new Error('Failed to create axios instance');
-        }
-        const res = await axios.get('/exhibition/user-exhibitions');
-        return res.data.data.exhibitions; 
+      const res = await createApi(accessToken).get('/exhibition/user-exhibitions');
+      return res.data;
     } catch (error) {
-        console.error('Error getting all exhibitions:', error);
-        return null;
+      console.error("Error getting exhibitions:", error);
+      return handleApiError<any>(
+        error,
+        "Failed to fetch exhibition history"
+      );
     }
-}
+  };

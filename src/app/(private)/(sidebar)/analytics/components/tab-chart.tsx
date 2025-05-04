@@ -4,21 +4,17 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  LineChart,
   BarChart,
-  Line,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  ResponsiveContainer,
 } from "recharts";
-import {
-  getAllUser,
-  getAllArtwork,
-  getAllExhibitiion,
-} from "@/service/analytics-service";
+import { getAllUser, getAllArtwork } from "@/service/analytics-service";
+import { getExhibitions } from "@/service/exhibition-service";
+import { getCurrentUser } from "@/lib/session";
 import { TopArtworks } from "./top-artworks";
 
 interface Artist {
@@ -35,54 +31,66 @@ export default function TabChart() {
   const [sortMetric, setSortMetric] = useState<"followers" | "artworks">(
     "followers"
   );
-  const [exhibitions, setExhibitions] = useState<any[]>([]);
+
+  const [exhibitionData, setExhibitionData] = useState<any>();
+  const [sortExMetric, setExSortMetric] = useState<
+    "visitors" | "totalTime" | "likes"
+  >("visitors");
+
+  const [token, setToken] = useState("");
 
   useEffect(() => {
-    async function fetchExhibitions() {
-      try {
-        const res = await getAllExhibitiion();
-        if (res?.data?.exhibitions) {
-          setExhibitions(res.data.exhibitions);
-        }
-      } catch (error) {
-        console.error("Error fetching exhibitions:", error);
-      }
-    }
-
-    fetchExhibitions();
+    const fetchCurrentUser = async () => {
+      const user = await getCurrentUser();
+      if (user) setToken(user.accessToken);
+    };
+    fetchCurrentUser();
   }, []);
 
-  const exhibitionMetrics = [
-    {
-      month: "Jan",
-      exhibition: "Modern Showcase",
-      visitors: 12500,
-      avgDuration: 45,
-      rating: 4.8,
-    },
-    {
-      month: "Feb",
-      exhibition: "Digital Festival",
-      visitors: 8900,
-      avgDuration: 38,
-      rating: 4.6,
-    },
-    {
-      month: "Mar",
-      exhibition: "Contemporary Masters",
-      visitors: 15600,
-      avgDuration: 52,
-      rating: 4.9,
-    },
-  ];
+  useEffect(() => {
+    const fetchExhibitions = async () => {
+      if (!token) return;
+      try {
+        const res = await getExhibitions({ status: "PUBLISHED" });
+        if (res?.data) {
+          setExhibitionData(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch exhibitions:", error);
+      }
+    };
 
-  const recentActivities = [
-    { id: 1, activity: "Artwork Upload", time: "5 minutes ago" },
-    { id: 2, activity: "New Comment", time: "15 minutes ago" },
-    { id: 3, activity: "Collection Created", time: "30 minutes ago" },
-    { id: 4, activity: "Gallery Visit", time: "45 minutes ago" },
-    { id: 5, activity: "Artwork Purchase", time: "1 hour ago" },
-  ];
+    fetchExhibitions();
+  }, [token]);
+
+  const getSortedExhibitions = () => {
+    const exhibitions = exhibitionData?.exhibitions || [];
+    return [...exhibitions]
+      .sort((a, b) => {
+        const resultA = a.result || {};
+        const resultB = b.result || {};
+        if (sortExMetric === "visitors")
+          return (resultB.visits || 0) - (resultA.visits || 0);
+        if (sortExMetric === "totalTime")
+          return (resultB.totalTime || 0) - (resultA.totalTime || 0);
+        if (sortExMetric === "likes")
+          return (resultB.likes?.length || 0) - (resultA.likes?.length || 0);
+        return 0;
+      })
+      .slice(0, 5);
+  };
+
+  const sortedExhibitions = getSortedExhibitions();
+
+  const exhibitionMetrics = sortedExhibitions.map((ex: any) => ({
+    exhibition:
+      ex.contents.find((c: any) => c.languageCode === "en")?.name ||
+      ex.contents[0]?.name ||
+      "Untitled",
+    visitors: ex.result?.visits || 0,
+    totalTime: ex.result?.totalTime || 0,
+    likes: ex.result?.likes?.length || 0,
+  }));
 
   useEffect(() => {
     async function fetchTopArtists() {
@@ -142,17 +150,17 @@ export default function TabChart() {
       <TabsContent value="artists">
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <CardHeader></CardHeader>
+            <CardHeader />
             <CardContent>
               <TopArtworks />
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader></CardHeader>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-xl font-semibold mx-6">Top Artist</p>
-              <div className="flex items-center space-x-4 mx-6">
+            <CardHeader />
+            <div className="flex items-center justify-between mb-6 px-6">
+              <p className="text-xl font-semibold">Top Artist</p>
+              <div className="flex items-center space-x-4">
                 <label className="text-sm text-muted-foreground">
                   Sort by:
                 </label>
@@ -161,7 +169,7 @@ export default function TabChart() {
                   onChange={(e) =>
                     setSortMetric(e.target.value as "followers" | "artworks")
                   }
-                  className="text-sm text-emerald-700 dark:text-emerald-200 bg-transparent border border-emerald-300 dark:border-emerald-600 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:focus:ring-emerald-600"
+                  className="text-sm text-emerald-700 dark:text-emerald-200 bg-transparent border border-emerald-300 dark:border-emerald-600 rounded-md px-2 py-1"
                 >
                   <option value="followers">Followers</option>
                   <option value="artworks">Artworks</option>
@@ -202,58 +210,79 @@ export default function TabChart() {
       </TabsContent>
 
       <TabsContent value="exhibitions">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Most Visited Exhibitions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BarChart width={500} height={300} data={exhibitionMetrics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="exhibition" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="visitors" fill="#8884d8" name="Visitors" />
-              </BarChart>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Exhibition Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {exhibitions.map((exhibition) => (
-                  <div key={exhibition._id} className="space-y-2">
-                    <div className="font-medium text-lg">
-                      {exhibition.contents?.[0]?.name || "Untitled"}
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <div className="text-gray-500">Visitors</div>
-                        <div className="font-medium">
-                          {exhibition.result?.visits ?? 0}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500">Total Time</div>
-                        <div className="font-medium">
-                          {Math.round((exhibition.result?.totalTime ?? 0) / 60)}{" "}
-                          mins
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500">Likes</div>
-                        <div className="font-medium text-yellow-500">
-                          ★ {exhibition.result?.likes?.length ?? 0}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        <div className="space-y-6">
+          {/* Exhibition Details */}
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="border-b border-gray-200 dark:border-gray-700 py-2 md:py-3 bg-gradient-to-r from-emerald-50 to-teal-100 dark:from-emerald-900 dark:to-teal-800">
+              <div className="flex items-center justify-between w-full">
+                <h2 className="text-base md:text-lg font-semibold text-emerald-700 dark:text-emerald-200">
+                  Exhibition Details
+                </h2>
+                <div className="ml-auto">
+                  <select
+                    value={sortExMetric}
+                    onChange={(e) =>
+                      setExSortMetric(
+                        e.target.value as "visitors" | "totalTime" | "likes"
+                      )
+                    }
+                    className="text-sm md:text-base text-emerald-700 dark:text-emerald-200 bg-transparent border border-emerald-300 dark:border-emerald-600 rounded-md px-2 py-1"
+                  >
+                    <option value="visitors">Visitors</option>
+                    <option value="totalTime">Time</option>
+                    <option value="likes">Likes</option>
+                  </select>
+                </div>
               </div>
+            </CardHeader>
+            <CardContent className="p-3 md:p-6 space-y-4 md:space-y-6">
+              {getSortedExhibitions().length > 0 ? (
+                getSortedExhibitions().map((exh) => {
+                  const exhibitionName =
+                    exh.contents?.[0]?.name || "Untitled Exhibition";
+                  const visitors = exh.result?.visits ?? 0;
+                  const totalTime = exh.result?.totalTime ?? 0;
+                  const likes = exh.result?.likes?.length ?? 0;
+
+                  return (
+                    <div key={exh._id} className="space-y-2">
+                      <div className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-200">
+                        {exhibitionName}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 md:gap-4 text-xs md:text-sm">
+                        <div>
+                          <div className="text-teal-600 dark:text-teal-400">
+                            Visitors
+                          </div>
+                          <div className="font-medium text-gray-700 dark:text-gray-200">
+                            {visitors.toLocaleString()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-teal-600 dark:text-teal-400">
+                            Total Time
+                          </div>
+                          <div className="font-medium text-gray-700 dark:text-gray-200">
+                            {totalTime} mins
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-teal-600 dark:text-teal-400">
+                            Likes
+                          </div>
+                          <div className="font-medium text-amber-500 dark:text-amber-400">
+                            ★ {likes}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  No exhibition data available.
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

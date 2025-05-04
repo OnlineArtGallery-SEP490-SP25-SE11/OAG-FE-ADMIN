@@ -102,34 +102,6 @@ export default function AnalyticsPage() {
         </p>
       </header>
       <TabChart />
-
-      {/* Bottom Section */}
-      {/* <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Performing Artworks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LineChart width={500} height={300} data={artistMetrics}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="newArtists" stroke="#8884d8" />
-              <Line type="monotone" dataKey="activeArtists" stroke="#82ca9d" />
-            </LineChart>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaction</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RecentSales />
-          </CardContent>
-        </Card>
-      </div> */}
     </div>
   );
 }
