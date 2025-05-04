@@ -87,6 +87,7 @@ export default function CreateEventPage() {
     setIsSubmitting(true);
     mutation.mutate({
       ...data,
+      link: data.link || '', // Ensure link is always a string
       status: EventStatus.UPCOMING,
     });
   };
@@ -245,43 +246,78 @@ export default function CreateEventPage() {
                       <FormField
                         control={form.control}
                         name="startDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium">Start Date & Time</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type="datetime-local" 
-                                  className="h-12 pl-10" 
-                                  {...field} 
-                                />
-                                <CalendarIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          // Get today's date formatted for datetime-local input
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const minDate = today.toISOString().slice(0, 16);
+                          
+                          // Check if start date is valid (>= today)
+                          const isStartDateValid = field.value ? new Date(field.value) >= today : true;
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">Start Date & Time</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input 
+                                    type="datetime-local" 
+                                    min={minDate}
+                                    className={`h-12 pl-10 ${!isStartDateValid ? 'border-red-300 focus-visible:ring-red-400' : ''}`} 
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      
+                                      // If end date is earlier than new start date, update end date
+                                      const endDateValue = form.getValues('endDate');
+                                      if (endDateValue && e.target.value && new Date(endDateValue) < new Date(e.target.value)) {
+                                        form.setValue('endDate', e.target.value);
+                                      }
+                                    }}
+                                  />
+                                  <CalendarIcon className={`absolute left-3 top-3.5 h-5 w-5 ${!isStartDateValid ? 'text-red-400' : 'text-slate-400'}`} />
+                                  {!isStartDateValid && (
+                                    <p className="text-xs text-red-500 mt-1">Start date must be today or later</p>
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
 
                       <FormField
                         control={form.control}
                         name="endDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-medium">End Date & Time</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type="datetime-local" 
-                                  className="h-12 pl-10" 
-                                  {...field} 
-                                />
-                                <CalendarIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          const startDate = form.getValues('startDate') || '';
+                          
+                          // Check if end date is valid (>= start date)
+                          const isEndDateValid = field.value && startDate ? 
+                            new Date(field.value) >= new Date(startDate) : true;
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel className="text-base font-medium">End Date & Time</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input 
+                                    type="datetime-local" 
+                                    min={startDate}
+                                    className={`h-12 pl-10 ${!isEndDateValid ? 'border-red-300 focus-visible:ring-red-400' : ''}`} 
+                                    {...field} 
+                                  />
+                                  <CalendarIcon className={`absolute left-3 top-3.5 h-5 w-5 ${!isEndDateValid ? 'text-red-400' : 'text-slate-400'}`} />
+                                  {!isEndDateValid && (
+                                    <p className="text-xs text-red-500 mt-1">End date must be after start date</p>
+                                  )}
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                     </div>
 
@@ -376,7 +412,10 @@ export default function CreateEventPage() {
                       name="link"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-base font-medium">Event Link</FormLabel>
+                          <div className="flex items-center gap-2">
+                            <FormLabel className="text-base font-medium">Event Link</FormLabel>
+                            <span className="text-sm text-slate-500 font-normal">(Optional)</span>
+                          </div>
                           <FormControl>
                             <div className="relative">
                               <Input 
@@ -387,7 +426,7 @@ export default function CreateEventPage() {
                               <LinkIcon className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
                             </div>
                           </FormControl>
-                          <FormDescription>Add a link to your event page or registration form</FormDescription>
+                          <FormDescription>Add a link to your event page or registration form (optional)</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
