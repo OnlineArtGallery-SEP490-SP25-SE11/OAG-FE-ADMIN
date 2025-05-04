@@ -152,7 +152,6 @@ export default function GalleryPreview({ showColliders }: { showColliders: boole
       />
 
       {/* Basic Walls (only if no model) */}
-      {!modelPath && (
         <>
           {/* Back wall */}
           <mesh position={[0, wallY, -halfZ]} castShadow receiveShadow>
@@ -175,7 +174,6 @@ export default function GalleryPreview({ showColliders }: { showColliders: boole
             <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
           </mesh>
         </>
-      )}
 
       {/* Custom colliders */}
       {showColliders && customColliders.map((collider, index) => {

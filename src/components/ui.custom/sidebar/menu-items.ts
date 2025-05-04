@@ -11,7 +11,8 @@ import {
 	ImagePlus,
 	Radio,
 	BanknoteIcon,
-	Palette
+	Palette,
+	Brush
 } from 'lucide-react';
 const menuItems = [
 	{ href: '/dashboard', label: 'Dashboard', icon: Home },
@@ -54,6 +55,7 @@ const menuItems = [
 	{ href: '/exhibitions', label: 'Exhibition', icon: Radio },
 	{ href: '/withdraw-request', label: 'Withdraw', icon: BanknoteIcon },
 	{ href: '/artist-requests', label: 'Artist Requests', icon: Palette },
+	{ href: '/artists', label: 'Artist', icon: Brush },
 	{ href: '/settings', label: 'Settings', icon: Settings },
 	
 	
