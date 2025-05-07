@@ -12,8 +12,22 @@ interface ArtworkDisplay {
   artist: string;
   views: number;
   revenue: number;
-  buyers: any[];
+  buyers: string[];
   price: number;
+}
+
+interface Artwork {
+  _id: string;
+  title: string;
+  url: string;
+  artistId?: {
+    _id: string;
+    name: string;
+  };
+  views?: number;
+  buyers?: string[];
+  price?: number;
+  status: string;
 }
 
 export function TopArtworks() {
@@ -24,21 +38,24 @@ export function TopArtworks() {
 
   useEffect(() => {
     async function fetchArtworks() {
-      const res = await getAllArtwork();
+      const res = await getAllArtwork({
+        skip: 0,
+        take: 0
+      });
       if (!res?.data?.artworks) return;
 
       const sorted = res.data.artworks
         .filter(
-          (artwork: any) =>
+          (artwork: Artwork) =>
             artwork.status === "selling" || artwork.status === "available"
         )
-        .map((artwork: any) => ({
+        .map((artwork: Artwork) => ({
           id: artwork._id,
           title: artwork.title,
           image: artwork.url,
           artist: artwork.artistId?.name || "Unknown",
           views: artwork.views || 0,
-          revenue: (artwork.buyers?.length || 0) * artwork.price,
+          revenue: (artwork.buyers?.length || 0) * (artwork.price || 0),
           buyers: artwork.buyers || [],
           price: artwork.price || 0,
         }));
@@ -118,4 +135,4 @@ export function TopArtworks() {
       ))}
     </div>
   );
-}
+} 

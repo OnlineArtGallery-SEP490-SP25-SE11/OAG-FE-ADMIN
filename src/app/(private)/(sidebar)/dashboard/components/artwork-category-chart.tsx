@@ -27,7 +27,10 @@ export function ArtworkCategoryChart() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await getAllArtwork();
+      const response = await getAllArtwork({
+        skip: 0,
+        take: 0
+      });
       if (!response || !response.data?.artworks) return;
 
       const artworks = response.data.artworks;
