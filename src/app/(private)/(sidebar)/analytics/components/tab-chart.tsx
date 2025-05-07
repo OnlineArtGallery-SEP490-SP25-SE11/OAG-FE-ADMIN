@@ -3,15 +3,6 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { getAllUser, getAllArtwork } from "@/service/analytics-service";
 import { getExhibitions } from "@/service/exhibition-service";
 import { getCurrentUser } from "@/lib/session";
@@ -79,19 +70,6 @@ export default function TabChart() {
       })
       .slice(0, 5);
   };
-
-  const sortedExhibitions = getSortedExhibitions();
-
-  const exhibitionMetrics = sortedExhibitions.map((ex: any) => ({
-    exhibition:
-      ex.contents.find((c: any) => c.languageCode === "en")?.name ||
-      ex.contents[0]?.name ||
-      "Untitled",
-    visitors: ex.result?.visits || 0,
-    totalTime: ex.result?.totalTime || 0,
-    likes: ex.result?.likes?.length || 0,
-  }));
-
   useEffect(() => {
     async function fetchTopArtists() {
       try {
@@ -211,7 +189,6 @@ export default function TabChart() {
 
       <TabsContent value="exhibitions">
         <div className="space-y-6">
-          {/* Exhibition Details */}
           <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
             <CardHeader className="border-b border-gray-200 dark:border-gray-700 py-2 md:py-3 bg-gradient-to-r from-emerald-50 to-teal-100 dark:from-emerald-900 dark:to-teal-800">
               <div className="flex items-center justify-between w-full">
