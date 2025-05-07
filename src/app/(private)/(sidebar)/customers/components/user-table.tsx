@@ -1,73 +1,45 @@
 'use client';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import { Role } from '@/utils/enums';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import userService from '@/service/user-service';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuCheckboxItem,
-  DropdownMenuGroup,
-  DropdownMenuLabel
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Search, Filter, X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreHorizontal, User, Mail, Shield, Calendar, ShieldCheck, ShieldOff, Ban, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "@/components/ui.custom/data-table";
+import { useToast } from "@/hooks/use-toast";
 
 export type User = {
   _id: string;
   name: string;
   email: string;
+  image: string;
   role: Role[] | Role;
-  avatar?: string;
   isBanned: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-const ROLES = ['admin', 'user', 'artist'] as const;
-const ITEMS_PER_PAGE = 10; // Số lượng mục trên mỗi trang
-
 export default function UserTable() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredData, setFilteredData] = useState<User[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [banFilter, setBanFilter] = useState<'all' | 'active' | 'banned'>('all');
-  const [activeFilters, setActiveFilters] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: users, isLoading, isError, error } = useQuery({
+  const { data: response, error } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       try {
         const response = await userService.getAllUser();
-        console.log('API response:', response);
-        
-        if (!response) return [];
-        
-        if (response.data && Array.isArray(response.data)) {
-          return response.data.map((user: User) => ({ ...user }));
-        }
-        
-        if (Array.isArray(response)) {
-          return response.map((user: User) => ({ ...user }));
-        }
-        
-        return [];
+        return response;
       } catch (error) {
         console.error('Error fetching users:', error);
         throw error;
@@ -76,288 +48,235 @@ export default function UserTable() {
     staleTime: 5 * 60 * 1000
   });
 
+  const updateToAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await userService.updateToAdmin(userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "Success",
+        description: "User has been given admin role successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update user role. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const removeAdminRoleMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await userService.removeAdminRole(userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "Success",
+        description: "Admin role has been removed successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to remove admin role. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getRolesArray = (role: Role[] | Role | undefined): Role[] => {
     if (!role) return [];
     return Array.isArray(role) ? role : [role];
   };
 
-  useEffect(() => {
-    if (users && Array.isArray(users)) {
-      let filtered = users.filter(
-        (user) =>
-          (user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      
-      if (selectedRoles.length > 0) {
-        filtered = filtered.filter(user => {
-          const userRoles = getRolesArray(user.role);
-          return userRoles.some(role => selectedRoles.includes(role));
-        });
-      }
-      
-      if (banFilter === 'active') {
-        filtered = filtered.filter(user => !user.isBanned);
-      } else if (banFilter === 'banned') {
-        filtered = filtered.filter(user => user.isBanned);
-      }
-      
-      setFilteredData(filtered);
-      
-      const newActiveFilters = [];
-      if (selectedRoles.length > 0) newActiveFilters.push(`Roles: ${selectedRoles.join(', ')}`);
-      if (banFilter !== 'all') newActiveFilters.push(`Status: ${banFilter === 'active' ? 'Active Only' : 'Banned Only'}`);
-      setActiveFilters(newActiveFilters);
-      
-      // Reset về trang đầu khi thay đổi bộ lọc
-      setCurrentPage(1);
-    } else {
-      setFilteredData([]);
-    }
-  }, [users, searchQuery, selectedRoles, banFilter]);
-
-  // Tính toán phân trang
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentItems = filteredData.slice(startIndex, endIndex);
-
-  const toggleRoleFilter = (role: string) => {
-    setSelectedRoles(prev => 
-      prev.includes(role) 
-        ? prev.filter(r => r !== role) 
-        : [...prev, role]
-    );
-  };
-  
-  const resetFilters = () => {
-    setSearchQuery('');
-    setSelectedRoles([]);
-    setBanFilter('all');
-    setCurrentPage(1);
+  const isAdmin = (user: User): boolean => {
+    const roles = getRolesArray(user.role);
+    return roles.includes(Role.ADMIN);
   };
 
-  const goToPreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
-  };
+  const columns: ColumnDef<User>[] = [
+    {
+      accessorKey: "name",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <User className="mr-1 h-4 w-4 text-primary" />
+          <span>Name</span>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <div className="flex items-center gap-2 justify-start">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.image} alt={user.name} />
+              <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <span className="font-medium text-left">{user.name}</span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <Mail className="mr-1 h-4 w-4 text-primary" />
+          <span>Email</span>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.email}</div>
+      ),
+    },
+    {
+      accessorKey: "role",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <Shield className="mr-1 h-4 w-4 text-primary" />
+          <span>Roles</span>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const roles = getRolesArray(row.original.role);
+        return (
+          <div className="flex flex-wrap gap-1 justify-center">
+            {roles.map(role => (
+              <Badge key={role} variant="outline" className="capitalize">
+                {role.toLowerCase()}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <span>Status</span>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const isBanned = row.original.isBanned;
+        return (
+          <div className="flex justify-center">
+            <Badge 
+              variant="outline"
+              className={isBanned ? 
+                "bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-200" : 
+                "bg-green-50 text-green-700 dark:bg-green-900 dark:text-green-200"
+              }
+            >
+              {isBanned ? 'Banned' : 'Active'}
+            </Badge>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <Calendar className="mr-1 h-4 w-4 text-primary" />
+          <span>Joined</span>
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="text-center">
+          {new Date(row.original.createdAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => (
+        <div className="flex items-center justify-center">
+          <span>Actions</span>
+        </div>
+      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        const userIsAdmin = isAdmin(user);
+        const isPending = updateToAdminMutation.isPending || removeAdminRoleMutation.isPending;
 
-  const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
-  };
+        return (
+          <div className="flex justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>User Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => userIsAdmin 
+                    ? removeAdminRoleMutation.mutate(user._id) 
+                    : updateToAdminMutation.mutate(user._id)
+                  }
+                  disabled={isPending}
+                  className={`flex items-center ${userIsAdmin ? "text-red-600" : "text-blue-600"}`}
+                >
+                  {userIsAdmin ? (
+                    <>
+                      <ShieldOff className="mr-2 h-4 w-4" />
+                      <span>Remove Admin Role</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      <span>Make Admin</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center text-red-600">
+                  {user.isBanned ? (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      <span>Unban User</span>
+                    </>
+                  ) : (
+                    <>
+                      <Ban className="mr-2 h-4 w-4" />
+                      <span>Ban User</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+    },
+  ];
 
-  if (isError) {
+  if (error) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p>Error loading users: {(error as Error)?.message || 'Unknown error'}</p>
+        <p className="text-red-500">Error loading users: {(error as Error)?.message || 'Unknown error'}</p>
       </div>
     );
   }
 
+  const users = response?.data || [];
+  
   return (
-    <div className='w-full space-y-4'>
-      {/* Các phần filter giữ nguyên */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          <div className='relative'>
-            <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
-            <Input
-              placeholder='Search users...'
-              className='pl-8 w-[300px]'
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='outline' size='sm' className='gap-1'>
-                <Filter className='h-4 w-4' />
-                Filter
-                {activeFilters.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1">
-                    {activeFilters.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              {/* Dropdown content giữ nguyên */}
-              <DropdownMenuLabel>Filter Options</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs font-medium">By Role</DropdownMenuLabel>
-                {ROLES.map(role => (
-                  <DropdownMenuCheckboxItem
-                    key={role}
-                    checked={selectedRoles.includes(role)}
-                    onCheckedChange={() => toggleRoleFilter(role)}
-                  >
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuLabel className="text-xs font-medium">By Status</DropdownMenuLabel>
-                <DropdownMenuCheckboxItem
-                  checked={banFilter === 'all'}
-                  onCheckedChange={() => banFilter !== 'all' && setBanFilter('all')}
-                >
-                  All Users
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={banFilter === 'active'}
-                  onCheckedChange={() => setBanFilter(banFilter === 'active' ? 'all' : 'active')}
-                >
-                  Active Only
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={banFilter === 'banned'}
-                  onCheckedChange={() => setBanFilter(banFilter === 'banned' ? 'all' : 'banned')}
-                >
-                  Banned Only
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="justify-center text-center"
-                onClick={resetFilters}
-              >
-                Reset All Filters
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        
-        {activeFilters.length > 0 && (
-          <div className="flex gap-2">
-            {activeFilters.map(filter => (
-              <Badge key={filter} variant="outline" className="flex items-center gap-1">
-                {filter}
-              </Badge>
-            ))}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 px-2" 
-              onClick={resetFilters}
-            >
-              <X className="h-3 w-3 mr-1" /> Clear
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className='flex justify-center items-center h-64'>
-          <p>Loading users...</p>
-        </div>
-      ) : (
-        <>
-          <div className='border rounded-md'>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead className='text-right'>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {!currentItems || currentItems.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className='text-center py-8 text-muted-foreground'>
-                      No users found {users?.length > 0 ? `(${users.length} users in unfiltered data)` : ''}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  currentItems.map((user) => (
-                    <TableRow key={user._id}>
-                      <TableCell className='font-medium'>
-                        <div className='flex items-center gap-2'>
-                          <Avatar>
-                            <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <span>{user.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {getRolesArray(user.role).map(role => (
-                            <Badge key={role} variant="outline" className="capitalize">
-                              {role}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded text-xs ${user.isBanned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                          {user.isBanned ? 'Banned' : 'Active'}
-                        </span>
-                      </TableCell>
-                      <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell className='text-right'>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant='ghost' size='sm'>
-                              <MoreHorizontal className='h-4 w-4' />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align='end'>
-                            <DropdownMenuItem>Edit User</DropdownMenuItem>
-                            <DropdownMenuItem>Manage Roles</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
-                              {user.isBanned ? 'Unban User' : 'Ban User'}
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Phần phân trang */}
-          {totalItems > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between py-4">
-              <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} users
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goToPreviousPage}
-                  disabled={currentPage === 1}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                <div className="text-sm">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    <DataTable 
+      columns={columns} 
+      data={users}
+      pagination={{
+        pageIndex: 0,
+        pageSize: 10,
+        totalCount: users.length,
+        totalPages: Math.ceil(users.length / 10),
+        hasNextPage: users.length > 10,
+        hasPrevPage: false
+      }}
+    />
   );
 }
