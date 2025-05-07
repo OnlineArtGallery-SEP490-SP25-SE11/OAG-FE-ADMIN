@@ -2,16 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getAllUser, getAllArtwork } from "@/service/analytics-service";
 import { getExhibitions } from "@/service/exhibition-service";
 import { getCurrentUser } from "@/lib/session";
@@ -26,13 +17,36 @@ interface Artist {
   revenue: number;
 }
 
+interface ExhibitionResult {
+  visits?: number;
+  totalTime?: number;
+  likes?: string[];
+}
+
+interface ExhibitionContent {
+  name?: string;
+}
+
+interface Exhibition {
+  _id: string;
+  result?: ExhibitionResult;
+  contents?: ExhibitionContent[];
+}
+
+interface ExhibitionData {
+  exhibitions: Exhibition[];
+  pagination?: {
+    total: number;
+  };
+}
+
 export default function TabChart() {
   const [topArtists, setTopArtists] = useState<Artist[]>([]);
   const [sortMetric, setSortMetric] = useState<"followers" | "artworks">(
     "followers"
   );
 
-  const [exhibitionData, setExhibitionData] = useState<any>();
+  const [exhibitionData, setExhibitionData] = useState<ExhibitionData | undefined>();
   const [sortExMetric, setExSortMetric] = useState<
     "visitors" | "totalTime" | "likes"
   >("visitors");
@@ -53,7 +67,8 @@ export default function TabChart() {
       try {
         const res = await getExhibitions({ status: "PUBLISHED" });
         if (res?.data) {
-          setExhibitionData(res.data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setExhibitionData(res.data.exhibitions as any);
         }
       } catch (error) {
         console.error("Failed to fetch exhibitions:", error);
@@ -79,36 +94,26 @@ export default function TabChart() {
       })
       .slice(0, 5);
   };
-
-  const sortedExhibitions = getSortedExhibitions();
-
-  const exhibitionMetrics = sortedExhibitions.map((ex: any) => ({
-    exhibition:
-      ex.contents.find((c: any) => c.languageCode === "en")?.name ||
-      ex.contents[0]?.name ||
-      "Untitled",
-    visitors: ex.result?.visits || 0,
-    totalTime: ex.result?.totalTime || 0,
-    likes: ex.result?.likes?.length || 0,
-  }));
-
   useEffect(() => {
     async function fetchTopArtists() {
       try {
         const [userRes, artworkRes] = await Promise.all([
           getAllUser(),
-          getAllArtwork(),
+          getAllArtwork({
+            skip: 0,
+            take: 0
+          }),
         ]);
 
         if (userRes?.data && artworkRes?.data?.artworks) {
           const artworks = artworkRes.data.artworks;
           const artists = userRes.data.filter(
-            (user: any) => user.role.includes("artist") && !user.isBanned
+            (user: {role: string[]; isBanned: boolean}) => user.role.includes("artist") && !user.isBanned
           );
 
           const artistWithArtworkCount = artists.map((artist: any) => {
             const artistArtworks = artworks.filter(
-              (artwork: any) => artwork.artistId?._id === artist._id
+              (artwork: {artistId?: {_id: string}}) => artwork.artistId?._id === artist._id
             );
             return {
               _id: artist._id,
@@ -211,7 +216,6 @@ export default function TabChart() {
 
       <TabsContent value="exhibitions">
         <div className="space-y-6">
-          {/* Exhibition Details */}
           <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
             <CardHeader className="border-b border-gray-200 dark:border-gray-700 py-2 md:py-3 bg-gradient-to-r from-emerald-50 to-teal-100 dark:from-emerald-900 dark:to-teal-800">
               <div className="flex items-center justify-between w-full">
@@ -263,7 +267,7 @@ export default function TabChart() {
                             Total Time
                           </div>
                           <div className="font-medium text-gray-700 dark:text-gray-200">
-                            {totalTime} mins
+                            {Math.round(totalTime / 60)} mins
                           </div>
                         </div>
                         <div>
@@ -289,4 +293,4 @@ export default function TabChart() {
       </TabsContent>
     </Tabs>
   );
-}
+} 

@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 const menuItems = [
 	{ href: '/dashboard', label: 'Dashboard', icon: Home },
-	{ href: '/analytics', label: 'Analytics', icon: BarChart2 },
 	{
 		href: '/customers',
 		label: 'Customers',

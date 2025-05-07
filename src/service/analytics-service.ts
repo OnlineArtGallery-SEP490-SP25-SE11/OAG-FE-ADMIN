@@ -17,13 +17,22 @@ export async function getAllUser() {
     }
 };
 
-export async function getAllArtwork() {
+export async function getAllArtwork({
+    skip = 0,
+    take = 10
+}: {
+    skip?: number;
+    take?: number;
+}   ) {
     try {
         const axios = await createAxiosInstance({ useToken: true });
         if (!axios) {
             throw new Error('Failed to create axios instance');
         }
-        const res = await axios.get('/artwork/admin');
+        const params = new URLSearchParams();
+        params.append("skip", skip.toString());
+        params.append("take", take.toString());
+        const res = await axios.get(`/artwork/admin?${params.toString()}`);
         return res.data;
     } catch (error) {
         console.error('Error getting all users:', error);
