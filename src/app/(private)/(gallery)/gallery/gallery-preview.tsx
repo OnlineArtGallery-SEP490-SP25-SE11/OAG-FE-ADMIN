@@ -17,7 +17,7 @@ function GLTFModel({ path, scale = 1, rotation = [0, 0, 0], position = [0, 0, 0]
   return <primitive object={scene.clone()} scale={[scale, scale, scale]} rotation={rotation} position={position} />;
 }
 
-function ModelFallback({ scale = 1, position = [0,0,0] }: { scale?: number; position?: [number, number, number] }) {
+function ModelFallback({ scale = 1, position = [0, 0, 0] }: { scale?: number; position?: [number, number, number] }) {
   return (
     <mesh scale={[scale, scale, scale]} position={position}>
       <boxGeometry args={[1, 1, 1]} />
@@ -26,13 +26,13 @@ function ModelFallback({ scale = 1, position = [0,0,0] }: { scale?: number; posi
   );
 }
 
-function LoadingPlaceholder({ scale = 1, position = [0,0,0] }: { scale?: number; position?: [number, number, number] }) {
-   return (
-     <mesh scale={[scale, scale, scale]} position={position}>
-       <boxGeometry args={[1, 1, 1]} />
-       <meshStandardMaterial wireframe color="gray" />
-     </mesh>
-   );
+function LoadingPlaceholder({ scale = 1, position = [0, 0, 0] }: { scale?: number; position?: [number, number, number] }) {
+  return (
+    <mesh scale={[scale, scale, scale]} position={position}>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial wireframe color="gray" />
+    </mesh>
+  );
 }
 
 function Model({ path, scale = 1, rotation = [0, 0, 0], position = [0, 0, 0] }: {
@@ -50,7 +50,7 @@ function Model({ path, scale = 1, rotation = [0, 0, 0], position = [0, 0, 0] }: 
 
   return (
     <ErrorBoundary fallback={<ModelFallback scale={scale} position={position} />} onError={(error) => console.error(`Error loading model from ${path}:`, error)}>
-      <Suspense fallback={<LoadingPlaceholder scale={scale} position={position}/>}>
+      <Suspense fallback={<LoadingPlaceholder scale={scale} position={position} />}>
         <GLTFModel path={path} scale={scale} rotation={rotation} position={position} />
       </Suspense>
     </ErrorBoundary>
@@ -81,11 +81,11 @@ function ArtworkPositionVisualizer({ artwork, materials }: {
       {/* Apply materials using primitive and attach */}
       {/* We map over the received materials array */}
       {materials.map((material, index) => (
-         <primitive
-           key={index} // Use index as key since material order is fixed
-           object={material}
-           attach={`material-${index}`} // material-0, material-1, ... material-5
-         />
+        <primitive
+          key={index} // Use index as key since material order is fixed
+          object={material}
+          attach={`material-${index}`} // material-0, material-1, ... material-5
+        />
       ))}
     </mesh>
   );
@@ -147,33 +147,33 @@ export default function GalleryPreview({ showColliders }: { showColliders: boole
     <>
       {/* Floor Helper Grid */}
       <gridHelper
-          args={[ Math.max(dimensions.xAxis, dimensions.zAxis) * 1.5, Math.max(dimensions.xAxis, dimensions.zAxis) * 1.5 / 2, "#666666", "#444444" ]}
-          position={[0, 0.01, 0]}
+        args={[Math.max(dimensions.xAxis, dimensions.zAxis) * 1.5, Math.max(dimensions.xAxis, dimensions.zAxis) * 1.5 / 2, "#666666", "#444444"]}
+        position={[0, 0.01, 0]}
       />
 
       {/* Basic Walls (only if no model) */}
-        <>
-          {/* Back wall */}
-          <mesh position={[0, wallY, -halfZ]} castShadow receiveShadow>
-            <boxGeometry args={[dimensions.xAxis, wallHeight, wallThickness]} />
-            <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
-          </mesh>
-          {/* Front wall */}
-          <mesh position={[0, wallY, halfZ]} castShadow receiveShadow>
-            <boxGeometry args={[dimensions.xAxis, wallHeight, wallThickness]} />
-            <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
-          </mesh>
-          {/* Left wall */}
-          <mesh position={[-halfX, wallY, 0]} castShadow receiveShadow>
-            <boxGeometry args={[wallThickness, wallHeight, dimensions.zAxis]} />
-            <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
-          </mesh>
-          {/* Right wall */}
-          <mesh position={[halfX, wallY, 0]} castShadow receiveShadow>
-            <boxGeometry args={[wallThickness, wallHeight, dimensions.zAxis]} />
-            <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
-          </mesh>
-        </>
+      <>
+        {/* Back wall */}
+        <mesh position={[0, wallY, -halfZ]} castShadow receiveShadow>
+          <boxGeometry args={[dimensions.xAxis, wallHeight, wallThickness]} />
+          <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
+        </mesh>
+        {/* Front wall */}
+        <mesh position={[0, wallY, halfZ]} castShadow receiveShadow>
+          <boxGeometry args={[dimensions.xAxis, wallHeight, wallThickness]} />
+          <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
+        </mesh>
+        {/* Left wall */}
+        <mesh position={[-halfX, wallY, 0]} castShadow receiveShadow>
+          <boxGeometry args={[wallThickness, wallHeight, dimensions.zAxis]} />
+          <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
+        </mesh>
+        {/* Right wall */}
+        <mesh position={[halfX, wallY, 0]} castShadow receiveShadow>
+          <boxGeometry args={[wallThickness, wallHeight, dimensions.zAxis]} />
+          <meshStandardMaterial color="#f0f0f0" transparent opacity={0.5} />
+        </mesh>
+      </>
 
       {/* Custom colliders */}
       {showColliders && customColliders.map((collider, index) => {
@@ -194,8 +194,13 @@ export default function GalleryPreview({ showColliders }: { showColliders: boole
           const arc = collider.arc || Math.PI * 2;
           return (
             <mesh key={`collider-curved-${index}`} position={pos} rotation={rot}>
-              <cylinderGeometry args={[radius, radius, height, segments, 1, false, 0, arc]} />
-              <meshStandardMaterial color="purple" transparent opacity={0.3} />
+              <cylinderGeometry args={[radius, radius, height, segments, 1, true, 0, arc]} />
+              <meshStandardMaterial
+                color="purple"
+                transparent
+                opacity={0.3}
+                side={THREE.DoubleSide}
+              />
             </mesh>
           );
         }
