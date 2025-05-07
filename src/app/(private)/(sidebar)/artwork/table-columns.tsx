@@ -31,6 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { vietnamCurrency } from "@/utils";
 
 export type ArtworkTableHandlers = {
   handleViewDetails: (artwork: Artwork) => void;
@@ -239,7 +240,7 @@ export const getArtworkColumns = ({
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        {row.original.price.toFixed(2)} ₫
+        {vietnamCurrency(row.original.price)}
       </div>
     ),
   },
