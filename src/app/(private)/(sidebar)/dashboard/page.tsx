@@ -13,11 +13,13 @@ import {
   getAllTransaction,
 } from "@/service/analytics-service";
 import { vietnamCurrency } from "@/utils/converters";
+import { getExhibitions } from "@/service/exhibition-service";
 
 export default function Dashboard() {
   const [artistCount, setArtistCount] = useState(0);
   const [artworkCount, setArtworkCount] = useState(0);
   const [galleryCount, setGalleryCount] = useState(0);
+  const [exhibitionCount, setExhibitionCount] = useState(0);
   const [commissionTotal, setCommissionTotal] = useState(0);
   const [transactionCount, setTransactionCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -32,11 +34,13 @@ export default function Dashboard() {
           artworkRes,
           galleryRes,
           transactionRes,
+          exhibitionRes,
         ] = await Promise.all([
           getAllUser(),
           getAllArtwork(),
           getAllGallery(),
           getAllTransaction(),
+          getExhibitions({}),
         ]);
 
         if (userRes?.data) {
@@ -52,6 +56,10 @@ export default function Dashboard() {
 
         if (galleryRes?.data?.pagination?.total !== undefined) {
           setGalleryCount(galleryRes.data.pagination.total);
+        }
+
+        if (exhibitionRes?.data?.pagination?.total !== undefined) {
+          setExhibitionCount(exhibitionRes.data.pagination.total);
         }
 
         if (transactionRes?.data) {
@@ -115,25 +123,25 @@ export default function Dashboard() {
         <MetricCard
           title="Total Artists"
           value={`${artistCount}`}
-          description="Up from last month"
+          description="Active artists"
           trend="up"
         />
         <MetricCard
           title="Total Artworks"
           value={`${artworkCount}`}
-          description="Growing collection"
+          description="Active artworks"
           trend="up"
         />
         <MetricCard
-          title="Total Exhibition"
-          value={`${galleryCount}`}
-          description="+8 from last month"
+          title="Total Exhibitions"
+          value={`${exhibitionCount}`}
+          description="Active exhibitions"
           trend="up"
         />
         <MetricCard
-          title="Not Yet"
+          title="Total Galleries"
           value={`${galleryCount}`}
-          description="+8 from last month"
+          description="Active galleries"
           trend="up"
         />
         <MetricCard
@@ -143,13 +151,13 @@ export default function Dashboard() {
           trend="up"
         />
         <MetricCard
-          title="Total Revenue Premium"
+          title="Revenue from Premium"
           value={`${vietnamCurrency(premiumRevenue)}`}
           description="From premium subscriptions"
           trend="up"
         />
         <MetricCard
-          title="Total Revenue Ticket Sale"
+          title="Revenue from Ticket Sales"
           value={`${vietnamCurrency(ticketRevenue)}`}
           description="From ticket sales"
           trend="up"
@@ -162,7 +170,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Chart Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <DashboardCard title="Revenue Overview">
           <RevenueChart />
@@ -172,13 +179,13 @@ export default function Dashboard() {
           <ArtworkCategoryChart />
         </DashboardCard>
 
-        <DashboardCard title="User Activity">
+        {/* <DashboardCard title="User Activity">
           <UserActivityChart />
         </DashboardCard>
 
         <DashboardCard title="Revenue Overview">
           <EngagementMetrics />
-        </DashboardCard>
+        </DashboardCard> */}
       </div>
     </div>
   );
