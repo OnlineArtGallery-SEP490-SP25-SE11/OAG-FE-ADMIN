@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { EngagementMetrics } from "@/app/(private)/(sidebar)/dashboard/components/revenue-chart";
-import { UserActivityChart } from "@/app/(private)/(sidebar)/dashboard/components/user-activity-chart";
 import { ArtworkCategoryChart } from "@/app/(private)/(sidebar)/dashboard/components/artwork-category-chart";
 import { RevenueChart } from "@/app/(private)/(sidebar)/dashboard/components/engagement-tricts";
+import TabChart from "@/app/(private)/(sidebar)/dashboard/components/tab-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getAllUser,
@@ -37,7 +36,10 @@ export default function Dashboard() {
           exhibitionRes,
         ] = await Promise.all([
           getAllUser(),
-          getAllArtwork(),
+          getAllArtwork({
+            skip: 0,
+            take: 0
+          }),
           getAllGallery(),
           getAllTransaction(),
           getExhibitions({}),
@@ -170,7 +172,7 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <DashboardCard title="Revenue Overview">
           <RevenueChart />
         </DashboardCard>
@@ -186,6 +188,13 @@ export default function Dashboard() {
         <DashboardCard title="Revenue Overview">
           <EngagementMetrics />
         </DashboardCard> */}
+      </div>
+      
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Detailed Analytics
+        </h2>
+        <TabChart />
       </div>
     </div>
   );

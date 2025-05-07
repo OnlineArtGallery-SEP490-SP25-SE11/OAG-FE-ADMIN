@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { getAllUser, getAllArtwork } from "@/service/analytics-service";
 import { getExhibitions } from "@/service/exhibition-service";
 import { getCurrentUser } from "@/lib/session";
@@ -17,13 +17,36 @@ interface Artist {
   revenue: number;
 }
 
+interface ExhibitionResult {
+  visits?: number;
+  totalTime?: number;
+  likes?: string[];
+}
+
+interface ExhibitionContent {
+  name?: string;
+}
+
+interface Exhibition {
+  _id: string;
+  result?: ExhibitionResult;
+  contents?: ExhibitionContent[];
+}
+
+interface ExhibitionData {
+  exhibitions: Exhibition[];
+  pagination?: {
+    total: number;
+  };
+}
+
 export default function TabChart() {
   const [topArtists, setTopArtists] = useState<Artist[]>([]);
   const [sortMetric, setSortMetric] = useState<"followers" | "artworks">(
     "followers"
   );
 
-  const [exhibitionData, setExhibitionData] = useState<any>();
+  const [exhibitionData, setExhibitionData] = useState<ExhibitionData | undefined>();
   const [sortExMetric, setExSortMetric] = useState<
     "visitors" | "totalTime" | "likes"
   >("visitors");
@@ -44,7 +67,8 @@ export default function TabChart() {
       try {
         const res = await getExhibitions({ status: "PUBLISHED" });
         if (res?.data) {
-          setExhibitionData(res.data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setExhibitionData(res.data.exhibitions as any);
         }
       } catch (error) {
         console.error("Failed to fetch exhibitions:", error);
@@ -75,18 +99,21 @@ export default function TabChart() {
       try {
         const [userRes, artworkRes] = await Promise.all([
           getAllUser(),
-          getAllArtwork(),
+          getAllArtwork({
+            skip: 0,
+            take: 0
+          }),
         ]);
 
         if (userRes?.data && artworkRes?.data?.artworks) {
           const artworks = artworkRes.data.artworks;
           const artists = userRes.data.filter(
-            (user: any) => user.role.includes("artist") && !user.isBanned
+            (user: {role: string[]; isBanned: boolean}) => user.role.includes("artist") && !user.isBanned
           );
 
           const artistWithArtworkCount = artists.map((artist: any) => {
             const artistArtworks = artworks.filter(
-              (artwork: any) => artwork.artistId?._id === artist._id
+              (artwork: {artistId?: {_id: string}}) => artwork.artistId?._id === artist._id
             );
             return {
               _id: artist._id,
@@ -240,7 +267,7 @@ export default function TabChart() {
                             Total Time
                           </div>
                           <div className="font-medium text-gray-700 dark:text-gray-200">
-                            {totalTime / 60} mins
+                            {Math.round(totalTime / 60)} mins
                           </div>
                         </div>
                         <div>
@@ -266,4 +293,4 @@ export default function TabChart() {
       </TabsContent>
     </Tabs>
   );
-}
+} 
